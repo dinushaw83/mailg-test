@@ -351,6 +351,38 @@
   margin-left: 0.5rem;
 }
 
+/* JSON Viewer Highlighting - Error (red) */
+.json-item.highlight-error {
+  background: rgba(127, 29, 29, 0.5);
+  border-left: 2px solid #ef4444;
+  padding-left: 4px;
+  margin-left: -4px;
+}
+
+.json-item.highlight-error .json-string,
+.json-item.highlight-error .json-number,
+.json-item.highlight-error .json-boolean,
+.json-item.highlight-error .json-null,
+.json-item.highlight-error .json-key {
+  color: #fecaca !important;
+}
+
+/* JSON Viewer Highlighting - Changed (green) */
+.json-item.highlight-changed {
+  background: rgba(20, 83, 45, 0.8);
+  border-left: 2px solid #10b981;
+  padding-left: 4px;
+  margin-left: -4px;
+}
+
+.json-item.highlight-changed .json-string,
+.json-item.highlight-changed .json-number,
+.json-item.highlight-changed .json-boolean,
+.json-item.highlight-changed .json-null,
+.json-item.highlight-changed .json-key {
+  color: #a7f3d0 !important;
+}
+
 /* Sync Diff View */
 .sync-diff-view {
   display: grid;

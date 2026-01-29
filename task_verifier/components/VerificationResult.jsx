@@ -1,131 +1,199 @@
 /* eslint-disable */
 
-import { Chip } from "@mui/material";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
+import { Badge } from "./Badge";
 import { JsonViewer } from "./JsonViewer";
 import { SyncScrollPane } from "./SyncScrollPane";
 
 export const VerificationResult = ({ result }) => {
   if (result.status === "running") {
     return (
-      <div className="py-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-        <p className="text-blue-700 font-medium">Running verification...</p>
-      </div>
+      <Box sx={{ py: 4, textAlign: "center" }}>
+        <Box
+          sx={{
+            width: 32,
+            height: 32,
+            border: "2px solid",
+            borderColor: "primary.main",
+            borderTopColor: "transparent",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+            mx: "auto",
+            mb: 1,
+          }}
+        />
+        <Typography sx={{ color: "info.main", fontWeight: 500 }}>Running verification...</Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Chip
-          label={result.status.toUpperCase()}
-          color={result.status === "success" ? "success" : "error"}
-          size="small"
-        />
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Badge variant={result.status === "success" ? "default" : "destructive"}>{result.status.toUpperCase()}</Badge>
         {result.executionTime && (
-          <span className="text-xs text-gray-500">
+          <Typography variant="caption" sx={{ color: "text.secondary" }}>
             Took {result.executionTime}ms
-          </span>
+          </Typography>
         )}
-      </div>
+      </Box>
 
-      <p className="text-lg font-medium text-gray-800">{result.message}</p>
+      <Typography variant="h6" sx={{ fontWeight: 500, color: "text.primary" }}>
+        {result.message}
+      </Typography>
 
       {result.error && (
-        <div className="bg-red-50 border border-red-100 p-3 rounded text-sm text-red-700 font-mono">
+        <Box
+          sx={{
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.1)" : "#fef2f2"),
+            border: (theme) =>
+              theme.palette.mode === "dark" ? "1px solid rgba(239, 68, 68, 0.3)" : "1px solid #fee2e2",
+            p: 1.5,
+            borderRadius: 1,
+            fontSize: "0.875rem",
+            color: "error.main",
+            fontFamily: "monospace",
+          }}
+        >
           <strong>Error:</strong> {result.error}
-        </div>
+        </Box>
       )}
 
       {result.assertionResults && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <h3 className="text-md font-bold mb-3 flex items-center gap-2">
-            <span>📊</span> Ground Truth Verification
-          </h3>
-          <div
-            className={`text-sm font-semibold mb-3 ${result.assertionResults.passed ? "text-green-600" : "text-red-600"}`}
+        <Box sx={{ mt: 2, pt: 2, borderTop: "1px solid", borderColor: "divider" }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              mb: 1.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              color: "text.primary",
+            }}
           >
-            {result.assertionResults.passed
-              ? "✓ All Database Assertions Passed"
-              : "✗ Database Assertions Failed"}
-          </div>
+            <span>📊</span> Ground Truth Verification
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 600,
+              mb: 1.5,
+              color: result.assertionResults.passed ? "success.main" : "error.main",
+            }}
+          >
+            {result.assertionResults.passed ? "✓ All Database Assertions Passed" : "✗ Database Assertions Failed"}
+          </Typography>
 
-          <div className="space-y-3">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {/* Matches Section */}
             {result.assertionResults.matches.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-green-600 uppercase tracking-wider flex items-center gap-2">
-                  <span>✓</span> Matched Changes (
-                  {result.assertionResults.matches.length})
-                </h4>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    color: "success.main",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <span>✓</span> Matched Changes ({result.assertionResults.matches.length})
+                </Typography>
                 {result.assertionResults.matches.map((m, i) => (
                   <MatchCard key={i} match={m} />
                 ))}
-              </div>
+              </Box>
             )}
 
             {/* Mismatches Section */}
             {result.assertionResults.mismatches.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-red-600 uppercase tracking-wider flex items-center gap-2">
-                  <span>✗</span> Missing Expected Changes (
-                  {result.assertionResults.mismatches.length})
-                </h4>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    color: "error.main",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <span>✗</span> Missing Expected Changes ({result.assertionResults.mismatches.length})
+                </Typography>
                 {result.assertionResults.mismatches.map((m, i) => (
                   <MismatchCard key={i} mismatch={m} />
                 ))}
-              </div>
+              </Box>
             )}
 
             {/* Count Errors Section */}
-            {result.assertionResults.countErrors &&
-              result.assertionResults.countErrors.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-amber-600 uppercase tracking-wider flex items-center gap-2">
-                    <span>⚠</span> Count Validation Errors (
-                    {result.assertionResults.countErrors.length})
-                  </h4>
-                  {result.assertionResults.countErrors.map((error, i) => (
-                    <CountErrorCard key={i} error={error} />
-                  ))}
-                </div>
-              )}
+            {result.assertionResults.countErrors && result.assertionResults.countErrors.length > 0 && (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    color: "warning.main",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <span>⚠</span> Count Validation Errors ({result.assertionResults.countErrors.length})
+                </Typography>
+                {result.assertionResults.countErrors.map((error, i) => (
+                  <CountErrorCard key={i} error={error} />
+                ))}
+              </Box>
+            )}
 
             {/* Unexpected Changes Section */}
-            {result.assertionResults.unexpected &&
-              result.assertionResults.unexpected.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-orange-600 uppercase tracking-wider flex items-center gap-2">
-                    <span>!</span> Unexpected Changes (
-                    {result.assertionResults.unexpected.length})
-                  </h4>
-                  <p className="text-xs text-orange-600 italic mb-2">
-                    These changes were not in the expected result
-                    (timestamp-only changes are ignored)
-                  </p>
-                  {result.assertionResults.unexpected.map((change, i) => (
-                    <UnexpectedChangeCard key={i} change={change} />
-                  ))}
-                </div>
-              )}
-          </div>
-        </div>
+            {result.assertionResults.unexpected && result.assertionResults.unexpected.length > 0 && (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 700,
+                    color: "warning.dark",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <span>!</span> Unexpected Changes ({result.assertionResults.unexpected.length})
+                </Typography>
+                <Typography variant="caption" sx={{ color: "warning.dark", fontStyle: "italic", mb: 1 }}>
+                  These changes were not in the expected result (timestamp-only changes are ignored)
+                </Typography>
+                {result.assertionResults.unexpected.map((change, i) => (
+                  <UnexpectedChangeCard key={i} change={change} />
+                ))}
+              </Box>
+            )}
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 
-const getDiffPaths = (
-  before,
-  actual,
-  path = "root",
-  highlightType = "changed"
-) => {
+const getDiffPaths = (before, actual, path = "root", highlightType = "changed") => {
   const highlights = {};
 
   if (before === actual) return highlights;
 
-  // Handle null/undefined or type mismatch
   if (
     before === null ||
     actual === null ||
@@ -135,21 +203,14 @@ const getDiffPaths = (
   ) {
     highlights[path] = highlightType;
 
-    // If actual is an object/array, recurse to highlight all children as "added"
     if (actual !== null && typeof actual === "object") {
       if (Array.isArray(actual)) {
         actual.forEach((item, i) => {
-          Object.assign(
-            highlights,
-            getDiffPaths(undefined, item, `${path}[${i}]`, highlightType)
-          );
+          Object.assign(highlights, getDiffPaths(undefined, item, `${path}[${i}]`, highlightType));
         });
       } else {
         Object.keys(actual).forEach((k) => {
-          Object.assign(
-            highlights,
-            getDiffPaths(undefined, actual[k], `${path}.${k}`, highlightType)
-          );
+          Object.assign(highlights, getDiffPaths(undefined, actual[k], `${path}.${k}`, highlightType));
         });
       }
     }
@@ -168,22 +229,15 @@ const getDiffPaths = (
     if (isBeforeArray) {
       const maxLen = Math.max(before.length, actual.length);
       for (let i = 0; i < maxLen; i++) {
-        Object.assign(
-          highlights,
-          getDiffPaths(before[i], actual[i], `${path}[${i}]`, highlightType)
-        );
+        Object.assign(highlights, getDiffPaths(before[i], actual[i], `${path}[${i}]`, highlightType));
       }
     } else {
       const keys = new Set([...Object.keys(before), ...Object.keys(actual)]);
       keys.forEach((k) => {
-        Object.assign(
-          highlights,
-          getDiffPaths(before[k], actual[k], `${path}.${k}`, highlightType)
-        );
+        Object.assign(highlights, getDiffPaths(before[k], actual[k], `${path}.${k}`, highlightType));
       });
     }
   } else {
-    // Primitives that were already checked for equality
     highlights[path] = highlightType;
   }
 
@@ -191,82 +245,121 @@ const getDiffPaths = (
 };
 
 const MatchCard = ({ match }) => {
-  // Get all changed paths as "error" (red) by default - these are unexpected changes
-  const highlightPaths = getDiffPaths(
-    match.before,
-    match.actual,
-    "root",
-    "error"
-  );
+  const highlightPaths = getDiffPaths(match.before, match.actual, "root", "error");
 
-  // Build set of asserted field paths for quick lookup
   const assertedFields = new Set(match.assertions.map((a) => a.field));
 
-  // Override: Mark asserted fields that passed as "changed" (green)
   match.assertions.forEach((a) => {
     const fieldPath = `root.${a.field}`;
     if (a.passed) {
-      highlightPaths[fieldPath] = "changed"; // Green for expected changes that passed
+      highlightPaths[fieldPath] = "changed";
     } else {
-      highlightPaths[fieldPath] = "error"; // Red for failed assertions
+      highlightPaths[fieldPath] = "error";
     }
   });
 
-  // Check if there are any unexpected changes (changes not in assertions)
   const hasUnexpectedChanges = Object.keys(highlightPaths).some((path) => {
     const fieldName = path.replace("root.", "");
     return highlightPaths[path] === "error" && !assertedFields.has(fieldName);
   });
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
-      <div className="bg-green-50 px-3 py-2 border-b flex justify-between items-center">
-        <span className="font-bold text-green-800 text-sm">
+    <Box
+      sx={{
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 2,
+        overflow: "hidden",
+        bgcolor: "background.paper",
+        boxShadow: 1,
+      }}
+    >
+      <Box
+        sx={{
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(16, 185, 129, 0.1)" : "#f0fdf4"),
+          px: 1.5,
+          py: 1,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 700, color: "success.dark" }}>
           {match.table} ({match.type})
-        </span>
-        <span className="text-xs font-medium bg-green-200 text-green-800 px-2 py-0.5 rounded">
-          MATCHED
-        </span>
-      </div>
-      <div className="p-3">
-        <p className="text-sm text-gray-600 mb-2">{match.description}</p>
-        <div className="space-y-1 mb-3">
+        </Typography>
+        <Chip
+          label="MATCHED"
+          size="small"
+          sx={{
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(16, 185, 129, 0.2)" : "#bbf7d0"),
+            color: "success.dark",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            height: 20,
+          }}
+        />
+      </Box>
+      <Box sx={{ p: 1.5 }}>
+        <Typography variant="body2" sx={{ color: "text.secondary", mb: 1 }}>
+          {match.description}
+        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, mb: 1.5 }}>
           {match.assertions.map((a, j) => (
-            <div key={j} className="flex items-center gap-2 text-xs">
-              <span className={a.passed ? "text-green-500" : "text-red-500"}>
+            <Box
+              key={j}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                fontSize: "0.75rem",
+              }}
+            >
+              <Box component="span" sx={{ color: a.passed ? "success.main" : "error.main" }}>
                 {a.passed ? "✓" : "✗"}
-              </span>
-              <span className="font-mono font-bold">{a.field}</span>
-              <span className="text-gray-400">|</span>
-              <span className="text-gray-600">
+              </Box>
+              <Box component="span" sx={{ fontFamily: "monospace", fontWeight: 700 }}>
+                {a.field}
+              </Box>
+              <Box component="span" sx={{ color: "text.disabled" }}>
+                |
+              </Box>
+              <Box component="span" sx={{ color: "text.secondary" }}>
                 Expected: {JSON.stringify(a.expected)}
-              </span>
-              <span className="text-gray-400">|</span>
-              <span className="text-gray-700 font-medium">
+              </Box>
+              <Box component="span" sx={{ color: "text.disabled" }}>
+                |
+              </Box>
+              <Box component="span" sx={{ color: "text.primary", fontWeight: 500 }}>
                 Actual: {JSON.stringify(a.actual)}
-              </span>
-            </div>
+              </Box>
+            </Box>
           ))}
-        </div>
+        </Box>
         {hasUnexpectedChanges && (
-          <div className="mb-3 px-2 py-1.5 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
+          <Box
+            sx={{
+              mb: 1.5,
+              px: 1,
+              py: 0.75,
+              bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.1)" : "#fffbeb"),
+              border: (theme) =>
+                theme.palette.mode === "dark" ? "1px solid rgba(217, 119, 6, 0.3)" : "1px solid #fde68a",
+              borderRadius: 1,
+              fontSize: "0.75rem",
+              color: "warning.main",
+            }}
+          >
             ⚠️ Other fields were also modified (shown in red below)
-          </div>
+          </Box>
         )}
         {match.type === "modified" && match.before && (
           <SyncScrollPane
             leftTitle="Before (Seed)"
             rightTitle="After (Result)"
-            leftContent={
-              <JsonViewer data={match.before} initialExpanded={true} />
-            }
-            rightContent={
-              <JsonViewer
-                data={match.actual}
-                initialExpanded={true}
-                highlightPaths={highlightPaths}
-              />
-            }
+            leftContent={<JsonViewer data={match.before} initialExpanded={true} />}
+            rightContent={<JsonViewer data={match.actual} initialExpanded={true} highlightPaths={highlightPaths} />}
             compact={true}
           />
         )}
@@ -275,22 +368,15 @@ const MatchCard = ({ match }) => {
             leftTitle="Before (Seed)"
             rightTitle="After (Result)"
             leftContent={<JsonViewer data={{}} initialExpanded={true} />}
-            rightContent={
-              <JsonViewer
-                data={match.actual}
-                initialExpanded={true}
-                highlightPaths={highlightPaths}
-              />
-            }
+            rightContent={<JsonViewer data={match.actual} initialExpanded={true} highlightPaths={highlightPaths} />}
             compact={true}
           />
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
-// Helper to get changed fields between before and after
 const getChangedFields = (before, after) => {
   const changes = [];
   if (!before || !after) return changes;
@@ -306,55 +392,84 @@ const getChangedFields = (before, after) => {
   return changes;
 };
 
-// Compact view showing only changed fields
 const ChangedFieldsSummary = ({ extraRow, idx }) => {
   const changes =
-    extraRow.rowType === "modified" && extraRow.before
-      ? getChangedFields(extraRow.before, extraRow.after)
-      : [];
+    extraRow.rowType === "modified" && extraRow.before ? getChangedFields(extraRow.before, extraRow.after) : [];
 
   const rowId = extraRow.before?.id || extraRow.after?.id || extraRow.row?.id;
 
   return (
-    <div className="border border-red-100 rounded bg-red-50/30">
-      <div className="px-2 py-1.5 bg-red-100/50 border-b border-red-100 flex items-center justify-between">
-        <span className="text-xs font-medium text-red-700">
-          {extraRow.rowType === "modified" ? "Modified" : "Added"} Row #
-          {idx + 1}
+    <Box
+      sx={{
+        border: "1px solid #fecaca",
+        borderRadius: 1,
+        bgcolor: "rgba(254, 242, 242, 0.3)",
+      }}
+    >
+      <Box
+        sx={{
+          px: 1,
+          py: 0.75,
+          bgcolor: "rgba(254, 226, 226, 0.5)",
+          borderBottom: "1px solid #fecaca",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography variant="caption" sx={{ fontWeight: 500, color: "#b91c1c" }}>
+          {extraRow.rowType === "modified" ? "Modified" : "Added"} Row #{idx + 1}
           {rowId && (
-            <span className="text-gray-500 font-normal ml-1">
+            <Box component="span" sx={{ color: "#64748b", fontWeight: 400, ml: 0.5 }}>
               (id: {rowId})
-            </span>
+            </Box>
           )}
-        </span>
-        <span className="text-[10px] text-red-400">
+        </Typography>
+        <Typography sx={{ fontSize: "0.625rem", color: "#f87171" }}>
           {changes.length} field{changes.length !== 1 ? "s" : ""} changed
-        </span>
-      </div>
-      <div className="p-2 space-y-1">
+        </Typography>
+      </Box>
+      <Box sx={{ p: 1, display: "flex", flexDirection: "column", gap: 0.5 }}>
         {changes.map((change, j) => (
-          <div
+          <Box
             key={j}
-            className="flex items-start gap-2 text-xs font-mono bg-white rounded px-2 py-1 border border-red-100"
+            sx={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 1,
+              fontSize: "0.75rem",
+              fontFamily: "monospace",
+              bgcolor: "white",
+              borderRadius: 0.5,
+              px: 1,
+              py: 0.5,
+              border: "1px solid #fecaca",
+            }}
           >
-            <span className="font-bold text-red-600 min-w-[100px]">
+            <Box component="span" sx={{ fontWeight: 700, color: "#dc2626", minWidth: 100 }}>
               {change.field}
-            </span>
-            <span className="text-gray-400">:</span>
-            <span className="text-gray-500 line-through">
+            </Box>
+            <Box component="span" sx={{ color: "#94a3b8" }}>
+              :
+            </Box>
+            <Box component="span" sx={{ color: "#64748b", textDecoration: "line-through" }}>
               {JSON.stringify(change.before)}
-            </span>
-            <span className="text-gray-400">→</span>
-            <span className="text-red-600 font-medium">
+            </Box>
+            <Box component="span" sx={{ color: "#94a3b8" }}>
+              →
+            </Box>
+            <Box component="span" sx={{ color: "#dc2626", fontWeight: 500 }}>
               {JSON.stringify(change.after)}
-            </span>
-          </div>
+            </Box>
+          </Box>
         ))}
         {changes.length === 0 && extraRow.rowType === "added" && (
-          <div className="text-xs text-gray-500 italic">New row added</div>
+          <Typography variant="caption" sx={{ color: "#64748b", fontStyle: "italic" }}>
+            New row added
+          </Typography>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
@@ -389,7 +504,9 @@ const MismatchCard = ({ mismatch }) => {
 
   const getSectionTitle = () => {
     if (mismatch.type === "count_mismatch") {
-      return `${mismatch.subType === "modified" ? "Modified" : "Added"} Rows Summary (${mismatch.extraRows?.length || 0}):`;
+      return `${
+        mismatch.subType === "modified" ? "Modified" : "Added"
+      } Rows Summary (${mismatch.extraRows?.length || 0}):`;
     }
     if (mismatch.type === "unexpected_deletes") {
       return `Deleted Rows (${mismatch.extraRows?.length || 0}):`;
@@ -397,121 +514,296 @@ const MismatchCard = ({ mismatch }) => {
     return `Unexpected Changes (${mismatch.extraRows?.length || 0}):`;
   };
 
-  // For count_mismatch, show compact view; for extra_rows, show full diff
   const showCompactView = mismatch.type === "count_mismatch";
 
   return (
-    <div className="border border-red-200 rounded-lg overflow-hidden bg-white shadow-sm">
-      <div className="bg-red-50 px-3 py-2 border-b flex justify-between items-center">
-        <span className="font-bold text-red-800 text-sm">
+    <Box
+      sx={{
+        border: "1px solid",
+        borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.3)" : "#fecaca"),
+        borderRadius: 2,
+        overflow: "hidden",
+        bgcolor: "background.paper",
+        boxShadow: 1,
+      }}
+    >
+      <Box
+        sx={{
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.1)" : "#fef2f2"),
+          px: 1.5,
+          py: 1,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 700, color: "error.dark" }}>
           {mismatch.table} - {getHeaderLabel(mismatch.type, mismatch.subType)}
-        </span>
-        <span className="text-xs font-medium bg-red-200 text-red-800 px-2 py-0.5 rounded">
-          FAILED
-        </span>
-      </div>
-      <div className="p-3">
-        <p className="text-sm text-red-700">{mismatch.reason}</p>
+        </Typography>
+        <Chip
+          label="FAILED"
+          size="small"
+          sx={{
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.3)" : "#fecaca"),
+            color: "error.dark",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            height: 20,
+          }}
+        />
+      </Box>
+      <Box sx={{ p: 1.5 }}>
+        <Typography variant="body2" sx={{ color: "error.main" }}>
+          {mismatch.reason}
+        </Typography>
         {mismatch.description && (
-          <p className="text-xs text-gray-500 mt-1 mb-3">
+          <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.5, mb: 1.5, display: "block" }}>
             {mismatch.description}
-          </p>
+          </Typography>
         )}
 
-        {/* Show count summary for count_mismatch */}
-        {mismatch.type === "count_mismatch" &&
-          mismatch.expectedCount !== undefined && (
-            <div className="mt-2 flex items-center gap-3 text-xs">
-              <span className="text-red-500">✗</span>
-              <span className="text-gray-600">
-                Expected:{" "}
-                <span className="font-bold">{mismatch.expectedCount}</span>
-              </span>
-              <span className="text-gray-400">|</span>
-              <span className="text-gray-600">
-                Actual:{" "}
-                <span className="font-bold text-red-600">
-                  {mismatch.actualCount}
-                </span>
-              </span>
-            </div>
-          )}
+        {mismatch.type === "count_mismatch" && mismatch.expectedCount !== undefined && (
+          <Box
+            sx={{
+              mt: 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              fontSize: "0.75rem",
+            }}
+          >
+            <Box component="span" sx={{ color: "error.main" }}>
+              ✗
+            </Box>
+            <Box component="span" sx={{ color: "text.secondary" }}>
+              Expected:{" "}
+              <Box component="span" sx={{ fontWeight: 700, color: "text.primary" }}>
+                {mismatch.expectedCount}
+              </Box>
+            </Box>
+            <Box component="span" sx={{ color: "text.disabled" }}>
+              |
+            </Box>
+            <Box component="span" sx={{ color: "text.secondary" }}>
+              Actual:{" "}
+              <Box component="span" sx={{ fontWeight: 700, color: "error.main" }}>
+                {mismatch.actualCount}
+              </Box>
+            </Box>
+          </Box>
+        )}
 
-        {mismatch.assertions && (
-          <div className="space-y-1 mt-3 pt-3 border-t border-red-100">
-            <p className="text-[10px] font-bold text-red-400 uppercase tracking-tight mb-1">
+        {(mismatch.evaluatedAssertions || mismatch.assertions) && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 0.5,
+              mt: 1.5,
+              pt: 1.5,
+              borderTop: "1px solid",
+              borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.3)" : "#fecaca"),
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "0.625rem",
+                fontWeight: 700,
+                color: "error.light",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                mb: 0.5,
+              }}
+            >
               Expected Conditions:
-            </p>
-            {mismatch.assertions.map((a, j) => (
-              <div key={j} className="flex items-center gap-2 text-xs">
-                <span className="text-red-300">✗</span>
-                <span className="font-mono font-bold text-gray-700">
-                  {a.field}
-                </span>
-                <span className="text-gray-400">|</span>
-                <span className="text-gray-500">{a.operator}</span>
-                <span className="text-gray-400">|</span>
-                <span className="text-gray-700">
-                  Expected: {JSON.stringify(a.expected)}
-                </span>
-              </div>
-            ))}
-          </div>
+            </Typography>
+            {(mismatch.evaluatedAssertions || mismatch.assertions)?.map((a, j) => {
+              const isPassed = "passed" in a ? a.passed : false;
+              const hasActual = "actual" in a;
+              const actualValue = hasActual ? a.actual : undefined;
+
+              return (
+                <Box
+                  key={j}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    fontSize: "0.75rem",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Box component="span" sx={{ color: isPassed ? "success.main" : "error.light" }}>
+                    {isPassed ? "✓" : "✗"}
+                  </Box>
+                  <Box
+                    component="span"
+                    sx={{
+                      fontFamily: "monospace",
+                      fontWeight: 700,
+                      color: "text.primary",
+                    }}
+                  >
+                    {a.field}
+                  </Box>
+                  <Box component="span" sx={{ color: "text.disabled" }}>
+                    |
+                  </Box>
+                  <Box component="span" sx={{ color: "text.secondary" }}>
+                    {a.operator}
+                  </Box>
+                  <Box component="span" sx={{ color: "text.disabled" }}>
+                    |
+                  </Box>
+                  <Box component="span" sx={{ color: "text.primary" }}>
+                    Expected: {JSON.stringify(a.expected)}
+                  </Box>
+                  {hasActual && (
+                    <>
+                      <Box component="span" sx={{ color: "text.disabled" }}>
+                        |
+                      </Box>
+                      <Box
+                        component="span"
+                        sx={{
+                          color: isPassed ? "success.main" : "error.main",
+                          fontWeight: 500,
+                        }}
+                      >
+                        Actual: {JSON.stringify(actualValue)}
+                      </Box>
+                    </>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        )}
+
+        {/* Closest Match Side-by-Side JSON Diff */}
+        {mismatch.closestMatch && (
+          <Box
+            sx={{
+              mt: 1.5,
+              pt: 1.5,
+              borderTop: "1px solid",
+              borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.3)" : "#fecaca"),
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "0.625rem",
+                fontWeight: 700,
+                color: "warning.main",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                mb: 1,
+              }}
+            >
+              Closest Match Found:
+            </Typography>
+            <SyncScrollPane
+              leftTitle="Expected (from assertions)"
+              rightTitle="Actual (closest match)"
+              leftContent={
+                <JsonViewer
+                  data={(mismatch.evaluatedAssertions || mismatch.assertions || []).reduce((acc, a) => {
+                    acc[a.field] = a.expected;
+                    return acc;
+                  }, {})}
+                  initialExpanded={true}
+                />
+              }
+              rightContent={
+                <JsonViewer
+                  data={mismatch.closestMatch}
+                  initialExpanded={true}
+                  highlightPaths={(mismatch.evaluatedAssertions || []).reduce((acc, a) => {
+                    if ("passed" in a && !a.passed) {
+                      acc[`root.${a.field}`] = "error";
+                    } else if ("passed" in a && a.passed) {
+                      acc[`root.${a.field}`] = "changed";
+                    }
+                    return acc;
+                  }, {})}
+                />
+              }
+              compact={true}
+            />
+          </Box>
         )}
 
         {mismatch.extraRows && mismatch.extraRows.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-red-100 space-y-3">
-            <p className="text-[10px] font-bold text-red-400 uppercase tracking-tight">
+          <Box
+            sx={{
+              mt: 1.5,
+              pt: 1.5,
+              borderTop: "1px solid",
+              borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.3)" : "#fecaca"),
+              display: "flex",
+              flexDirection: "column",
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "0.625rem",
+                fontWeight: 700,
+                color: "error.light",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+              }}
+            >
               {getSectionTitle()}
-            </p>
+            </Typography>
 
-            {/* Compact view for count_mismatch - only show changed fields */}
             {showCompactView &&
               mismatch.extraRows.map((extraRow, idx) => (
                 <ChangedFieldsSummary key={idx} extraRow={extraRow} idx={idx} />
               ))}
 
-            {/* Full diff view for extra_rows and other types */}
             {!showCompactView &&
               mismatch.extraRows.map((extraRow, idx) => {
-                // Use "error" highlight type for unexpected rows (shows in red)
                 const highlightPaths =
                   extraRow.rowType === "modified" && extraRow.before
-                    ? getDiffPaths(
-                        extraRow.before,
-                        extraRow.after,
-                        "root",
-                        "error"
-                      )
+                    ? getDiffPaths(extraRow.before, extraRow.after, "root", "error")
                     : {};
 
                 return (
-                  <div
+                  <Box
                     key={idx}
-                    className="border border-red-100 rounded bg-red-50/30"
+                    sx={{
+                      border: "1px solid",
+                      borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.3)" : "#fecaca"),
+                      borderRadius: 1,
+                      bgcolor: (theme) =>
+                        theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.1)" : "rgba(254, 242, 242, 0.3)",
+                    }}
                   >
-                    <div className="px-2 py-1 bg-red-100/50 border-b border-red-100">
-                      <span className="text-xs font-medium text-red-700">
+                    <Box
+                      sx={{
+                        px: 1,
+                        py: 0.5,
+                        bgcolor: (theme) =>
+                          theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.2)" : "rgba(254, 226, 226, 0.5)",
+                        borderBottom: "1px solid",
+                        borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.3)" : "#fecaca"),
+                      }}
+                    >
+                      <Typography variant="caption" sx={{ fontWeight: 500, color: "error.main" }}>
                         {getRowTypeLabel(extraRow.rowType)} #{idx + 1}
-                      </span>
-                    </div>
-                    <div className="p-2">
+                      </Typography>
+                    </Box>
+                    <Box sx={{ p: 1 }}>
                       {extraRow.rowType === "modified" && extraRow.before ? (
                         <SyncScrollPane
                           leftTitle="Before"
                           rightTitle="After"
-                          leftContent={
-                            <JsonViewer
-                              data={extraRow.before}
-                              initialExpanded={true}
-                            />
-                          }
+                          leftContent={<JsonViewer data={extraRow.before} initialExpanded={true} />}
                           rightContent={
-                            <JsonViewer
-                              data={extraRow.after}
-                              initialExpanded={true}
-                              highlightPaths={highlightPaths}
-                            />
+                            <JsonViewer data={extraRow.after} initialExpanded={true} highlightPaths={highlightPaths} />
                           }
                           compact={true}
                         />
@@ -523,53 +815,38 @@ const MismatchCard = ({ mismatch }) => {
                             <JsonViewer
                               data={extraRow.row}
                               initialExpanded={true}
-                              highlightPaths={getDiffPaths(
-                                {},
-                                extraRow.row,
-                                "root",
-                                "error"
-                              )}
+                              highlightPaths={getDiffPaths({}, extraRow.row, "root", "error")}
                             />
                           }
-                          rightContent={
-                            <JsonViewer data={{}} initialExpanded={true} />
-                          }
+                          rightContent={<JsonViewer data={{}} initialExpanded={true} />}
                           compact={true}
                         />
                       ) : (
                         <SyncScrollPane
                           leftTitle="Before"
                           rightTitle="After (New Row)"
-                          leftContent={
-                            <JsonViewer data={{}} initialExpanded={true} />
-                          }
+                          leftContent={<JsonViewer data={{}} initialExpanded={true} />}
                           rightContent={
                             <JsonViewer
                               data={extraRow.row || extraRow.after}
                               initialExpanded={true}
-                              highlightPaths={getDiffPaths(
-                                {},
-                                extraRow.row || extraRow.after,
-                                "root",
-                                "error"
-                              )}
+                              highlightPaths={getDiffPaths({}, extraRow.row || extraRow.after, "root", "error")}
                             />
                           }
                           compact={true}
                         />
                       )}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 );
               })}
-          </div>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
-// CountErrorCard component for displaying count validation errors
 const CountErrorCard = ({ error }) => {
   const getTypeLabel = (type) => {
     switch (type) {
@@ -604,99 +881,254 @@ const CountErrorCard = ({ error }) => {
   const getRowTypeColor = (rowType) => {
     switch (rowType) {
       case "added":
-        return "text-green-600 bg-green-50";
+        return {
+          color: "success.dark",
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(16, 185, 129, 0.2)" : "#f0fdf4"),
+        };
       case "modified":
-        return "text-amber-600 bg-amber-50";
+        return {
+          color: "warning.dark",
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.2)" : "#fffbeb"),
+        };
       case "deleted":
-        return "text-red-600 bg-red-50";
+        return {
+          color: "error.dark",
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(239, 68, 68, 0.2)" : "#fef2f2"),
+        };
       default:
-        return "text-gray-600 bg-gray-50";
+        return {
+          color: "text.secondary",
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "#f8fafc"),
+        };
     }
   };
 
   return (
-    <div className="border border-amber-200 rounded-lg overflow-hidden bg-white shadow-sm">
-      <div className="bg-amber-50 px-3 py-2 border-b flex justify-between items-center">
-        <span className="font-bold text-amber-800 text-sm">
+    <Box
+      sx={{
+        border: "1px solid",
+        borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.3)" : "#fde68a"),
+        borderRadius: 2,
+        overflow: "hidden",
+        bgcolor: "background.paper",
+        boxShadow: 1,
+      }}
+    >
+      <Box
+        sx={{
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.1)" : "#fffbeb"),
+          px: 1.5,
+          py: 1,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 700, color: "warning.dark" }}>
           {error.table} - {getTypeLabel(error.type)}
-        </span>
-        <span className="text-xs font-medium bg-amber-200 text-amber-800 px-2 py-0.5 rounded">
-          COUNT ERROR
-        </span>
-      </div>
-      <div className="p-3">
-        <p className="text-sm text-amber-700">{error.message}</p>
-        <div className="mt-2 flex items-center gap-3 text-xs">
-          <span className="text-amber-500">⚠</span>
+        </Typography>
+        <Chip
+          label="COUNT ERROR"
+          size="small"
+          sx={{
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.3)" : "#fde68a"),
+            color: "warning.dark",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            height: 20,
+          }}
+        />
+      </Box>
+      <Box sx={{ p: 1.5 }}>
+        <Typography variant="body2" sx={{ color: "warning.main" }}>
+          {error.message}
+        </Typography>
+        <Box
+          sx={{
+            mt: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            fontSize: "0.75rem",
+          }}
+        >
+          <Box component="span" sx={{ color: "warning.main" }}>
+            ⚠
+          </Box>
           {error.expected !== undefined && (
             <>
-              <span className="text-gray-600">
-                Expected: <span className="font-bold">{error.expected}</span>
-              </span>
-              <span className="text-gray-400">|</span>
+              <Box component="span" sx={{ color: "text.secondary" }}>
+                Expected:{" "}
+                <Box component="span" sx={{ fontWeight: 700, color: "text.primary" }}>
+                  {error.expected}
+                </Box>
+              </Box>
+              <Box component="span" sx={{ color: "text.disabled" }}>
+                |
+              </Box>
             </>
           )}
-          <span className="text-gray-600">
+          <Box component="span" sx={{ color: "text.secondary" }}>
             Actual:{" "}
-            <span className="font-bold text-amber-600">{error.actual}</span>
-          </span>
-        </div>
+            <Box component="span" sx={{ fontWeight: 700, color: "warning.main" }}>
+              {error.actual}
+            </Box>
+          </Box>
+        </Box>
 
-        {/* Row List */}
         {error.rows && error.rows.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-amber-100">
-            <p className="text-[10px] font-bold text-amber-500 uppercase tracking-tight mb-2">
+          <Box
+            sx={{
+              mt: 1.5,
+              pt: 1.5,
+              borderTop: "1px solid",
+              borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.3)" : "#fde68a"),
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: "0.625rem",
+                fontWeight: 700,
+                color: "warning.main",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                mb: 1,
+              }}
+            >
               Affected Rows:
-            </p>
-            <ul className="space-y-1.5">
-              {error.rows.map((row, idx) => (
-                <li
-                  key={idx}
-                  className="flex items-start gap-2 text-xs bg-amber-50/50 rounded px-2 py-1.5 border border-amber-100"
-                >
-                  <span
-                    className={`font-mono font-bold w-5 h-5 flex items-center justify-center rounded text-xs ${getRowTypeColor(row.rowType)}`}
+            </Typography>
+            <Box
+              component="ul"
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.75,
+                m: 0,
+                p: 0,
+                listStyle: "none",
+              }}
+            >
+              {error.rows.map((row, idx) => {
+                const typeColors = getRowTypeColor(row.rowType);
+                return (
+                  <Box
+                    component="li"
+                    key={idx}
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 1,
+                      fontSize: "0.75rem",
+                      bgcolor: (theme) =>
+                        theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.1)" : "rgba(255, 251, 235, 0.5)",
+                      borderRadius: 0.5,
+                      px: 1,
+                      py: 0.75,
+                      border: "1px solid",
+                      borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.3)" : "#fde68a"),
+                    }}
                   >
-                    {getRowTypeIcon(row.rowType)}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      {row.id && (
-                        <span className="font-mono text-gray-400">
-                          #{row.id}
-                        </span>
-                      )}
-                      <span className="font-medium text-gray-700 truncate">
-                        {getRowLabel(row)}
-                      </span>
-                    </div>
-                    {row.changedFields && row.changedFields.length > 0 && (
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        <span className="text-[10px] text-gray-400">
-                          Changed:
-                        </span>
-                        {row.changedFields.map((field, fieldIdx) => (
-                          <span
-                            key={fieldIdx}
-                            className="text-[10px] font-mono bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded"
+                    <Box
+                      sx={{
+                        fontFamily: "monospace",
+                        fontWeight: 700,
+                        width: 20,
+                        height: 20,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 0.5,
+                        fontSize: "0.75rem",
+                        color: typeColors.color,
+                        bgcolor: typeColors.bgcolor,
+                      }}
+                    >
+                      {getRowTypeIcon(row.rowType)}
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                        }}
+                      >
+                        {row.id && (
+                          <Box
+                            component="span"
+                            sx={{
+                              fontFamily: "monospace",
+                              color: "text.disabled",
+                            }}
                           >
-                            {field}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+                            #{row.id}
+                          </Box>
+                        )}
+                        <Box
+                          component="span"
+                          sx={{
+                            fontWeight: 500,
+                            color: "text.primary",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {getRowLabel(row)}
+                        </Box>
+                      </Box>
+                      {row.changedFields && row.changedFields.length > 0 && (
+                        <Box
+                          sx={{
+                            mt: 0.5,
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 0.5,
+                          }}
+                        >
+                          <Box
+                            component="span"
+                            sx={{
+                              fontSize: "0.625rem",
+                              color: "text.disabled",
+                            }}
+                          >
+                            Changed:
+                          </Box>
+                          {row.changedFields.map((field, fieldIdx) => (
+                            <Box
+                              key={fieldIdx}
+                              component="span"
+                              sx={{
+                                fontSize: "0.625rem",
+                                fontFamily: "monospace",
+                                bgcolor: (theme) =>
+                                  theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.2)" : "#fef3c7",
+                                color: "warning.dark",
+                                px: 0.75,
+                                py: 0.25,
+                                borderRadius: 0.5,
+                              }}
+                            >
+                              {field}
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
-// UnexpectedChangeCard component for displaying unexpected changes
 const UnexpectedChangeCard = ({ change }) => {
   const getTypeLabel = (type) => {
     switch (type) {
@@ -715,67 +1147,103 @@ const UnexpectedChangeCard = ({ change }) => {
     }
   };
 
-  // For modified rows, extract before/after if available
-  const isModifiedRow =
-    change.type === "extra_modified" ||
-    change.type === "unexpected_table_modified";
+  const isModifiedRow = change.type === "extra_modified" || change.type === "unexpected_table_modified";
   const beforeData = isModifiedRow ? change.row?.before : null;
   const afterData = isModifiedRow ? change.row?.after || change.row : null;
 
-  // Calculate highlight paths for diff
   const highlightPaths =
     isModifiedRow && beforeData
       ? getDiffPaths(beforeData, afterData, "root", "error")
       : getDiffPaths({}, change.row, "root", "error");
 
   return (
-    <div className="border border-orange-200 rounded-lg overflow-hidden bg-white shadow-sm">
-      <div className="bg-orange-50 px-3 py-2 border-b flex justify-between items-center">
-        <span className="font-bold text-orange-800 text-sm">
+    <Box
+      sx={{
+        border: "1px solid",
+        borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.3)" : "#fed7aa"),
+        borderRadius: 2,
+        overflow: "hidden",
+        bgcolor: "background.paper",
+        boxShadow: 1,
+      }}
+    >
+      <Box
+        sx={{
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.1)" : "#fff7ed"),
+          px: 1.5,
+          py: 1,
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 700, color: "warning.dark" }}>
           {change.table} - {getTypeLabel(change.type)}
-        </span>
-        <span className="text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded">
-          UNEXPECTED
-        </span>
-      </div>
-      <div className="p-3">
-        <p className="text-sm text-orange-700 mb-3">{change.reason}</p>
+        </Typography>
+        <Chip
+          label="UNEXPECTED"
+          size="small"
+          sx={{
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.3)" : "#fed7aa"),
+            color: "warning.dark",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            height: 20,
+          }}
+        />
+      </Box>
+      <Box sx={{ p: 1.5 }}>
+        <Typography variant="body2" sx={{ color: "warning.main", mb: 1.5 }}>
+          {change.reason}
+        </Typography>
 
         {isModifiedRow && beforeData ? (
           <SyncScrollPane
             leftTitle="Before"
             rightTitle="After"
-            leftContent={
-              <JsonViewer data={beforeData} initialExpanded={true} />
-            }
-            rightContent={
-              <JsonViewer
-                data={afterData}
-                initialExpanded={true}
-                highlightPaths={highlightPaths}
-              />
-            }
+            leftContent={<JsonViewer data={beforeData} initialExpanded={true} />}
+            rightContent={<JsonViewer data={afterData} initialExpanded={true} highlightPaths={highlightPaths} />}
             compact={true}
           />
         ) : (
-          <div className="border border-orange-100 rounded bg-orange-50/30">
-            <div className="px-2 py-1 bg-orange-100/50 border-b border-orange-100">
-              <span className="text-xs font-medium text-orange-700">
+          <Box
+            sx={{
+              border: "1px solid",
+              borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.3)" : "#fed7aa"),
+              borderRadius: 1,
+              bgcolor: (theme) =>
+                theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.1)" : "rgba(255, 247, 237, 0.3)",
+            }}
+          >
+            <Box
+              sx={{
+                px: 1,
+                py: 0.5,
+                bgcolor: (theme) =>
+                  theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.2)" : "rgba(254, 215, 170, 0.5)",
+                borderBottom: "1px solid",
+                borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(217, 119, 6, 0.3)" : "#fed7aa"),
+              }}
+            >
+              <Typography variant="caption" sx={{ fontWeight: 500, color: "warning.main" }}>
                 Row Data
-              </span>
-            </div>
-            <div className="p-2">
-              <div className="json-viewer-container compact">
-                <JsonViewer
-                  data={change.row}
-                  initialExpanded={true}
-                  highlightPaths={highlightPaths}
-                />
-              </div>
-            </div>
-          </div>
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                p: 1,
+                bgcolor: (theme) => (theme.palette.mode === "dark" ? "#1e293b" : "#0f172a"),
+                maxHeight: 200,
+                overflow: "auto",
+              }}
+            >
+              <JsonViewer data={change.row} initialExpanded={true} highlightPaths={highlightPaths} />
+            </Box>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
