@@ -329,9 +329,19 @@ def bulk_delete(request: BulkDeleteRequest, db: Session = Depends(get_db)):
     try:
         # 2. Permanent delete
         if request.permanent or trash_ids:
+            ids_to_delete = trash_ids if not request.permanent else accessible_ids
+            
+            # Nullify parent_email_id for any child emails referencing emails being deleted
+            # This prevents FK violation when parent emails have replies/forwards
             db.query(Email).filter(
-                Email.id.in_(trash_ids if not request.permanent else accessible_ids)
-            ).delete(
+                Email.parent_email_id.in_(ids_to_delete)
+            ).update(
+                {Email.parent_email_id: None},
+                synchronize_session=False
+            )
+            
+            # Now delete the emails
+            db.query(Email).filter(Email.id.in_(ids_to_delete)).delete(
                 synchronize_session=False
             )
 
