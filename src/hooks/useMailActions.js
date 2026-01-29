@@ -88,7 +88,8 @@ const withUndo = (ids, setEmails, operation) => {
 export default function useMailActions() {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
-  const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels, setSearchResults, searchResults } = useGlobalContext();
+  const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels, setSearchResults, searchResults } =
+    useGlobalContext();
 
   // Centralized ID resolution hook
   const { resolveIds, resolveThreadIds } = useIdResolver();
@@ -872,7 +873,8 @@ export default function useMailActions() {
       // Optimistic updates using resolved IDs
       updateQueryCache(allIds, (email) => ({ ...email, is_starred: newState }));
       setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: newState } : m)));
-      // Also update search results for optimistic updates on search page
+      // Update searchResults - just update the flag, don't remove
+      // (we don't know the search context, so removing could affect unrelated searches)
       setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: newState } : m)));
 
       // Revert function for error handling
@@ -929,7 +931,8 @@ export default function useMailActions() {
       // Optimistic updates using resolved IDs
       updateQueryCache(allIds, (email) => ({ ...email, is_starred: value }));
       setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: value } : m)));
-      // Also update search results for optimistic updates on search page
+      // Update searchResults - just update the flag, don't remove
+      // (we don't know the search context, so removing could affect unrelated searches)
       setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: value } : m)));
 
       // Revert function for error handling
@@ -1036,10 +1039,15 @@ export default function useMailActions() {
       // Optimistic updates using resolved IDs
       updateQueryCache(allIds, (email) => ({ ...email, is_important: newState }));
       setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: newState } : m)));
+      // Update searchResults - just update the flag, don't remove
+      // (we don't know the search context, so removing could affect unrelated searches)
+      setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: newState } : m)));
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(allIds, (email) => ({ ...email, is_important: !newState }));
+        setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: !newState } : m)));
+        setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: !newState } : m)));
       };
 
       // Call thread-level endpoint for each thread
@@ -1052,7 +1060,7 @@ export default function useMailActions() {
           revertUpdate();
         });
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
+    [setEmails, setSearchResults, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const setImportant = useCallback(
@@ -1070,11 +1078,19 @@ export default function useMailActions() {
 
       // Force immediate state update with new object references to trigger re-render
       setEmails((prev) => prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: newValue } : m)));
+      // Update searchResults - just update the flag, don't remove
+      // (we don't know the search context, so removing could affect unrelated searches)
+      setSearchResults((prev) =>
+        prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: newValue } : m))
+      );
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(resolvedThreadIds, (email) => ({ ...email, is_important: !newValue }));
         setEmails((prev) => prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: !newValue } : m)));
+        setSearchResults((prev) =>
+          prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: !newValue } : m))
+        );
       };
 
       // Use bulk endpoint for all threads at once
@@ -1088,7 +1104,7 @@ export default function useMailActions() {
           revertUpdate();
         });
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveThreadIds]
+    [setEmails, setSearchResults, dispatch, updateQueryCache, invalidateEmailCaches, resolveThreadIds]
   );
 
   const moveToLabel = useCallback(
