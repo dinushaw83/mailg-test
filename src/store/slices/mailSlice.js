@@ -771,6 +771,10 @@ const mailSlice = createSlice({
       // Legacy support: set emails to inbox
       state.inbox = action.payload;
     },
+    setSearchResults: (state, action) => {
+      // Update search results (for optimistic updates)
+      state.searchResults = action.payload;
+    },
     setEmailsForCategory: (state, action) => {
       const { category, emails } = action.payload;
       if (state.hasOwnProperty(category)) {
@@ -1080,6 +1084,7 @@ const mailSlice = createSlice({
             "mail/bulkUnarchiveEmails/fulfilled",
             "mail/bulkSnoozeThreads/fulfilled",
             "mail/bulkUnsnoozeThreads/fulfilled",
+            "mail/bulkUnstarThreads/fulfilled",
             "mail/snoozeThread/fulfilled",
             "mail/unsnoozeThread/fulfilled",
             "mail/moveToTrash/fulfilled",
@@ -1119,6 +1124,7 @@ const mailSlice = createSlice({
 
 export const {
   setEmails,
+  setSearchResults,
   setEmailsForCategory,
   setLabels,
   setLabelIdToKeyMap,

@@ -25,6 +25,7 @@ import {
   setLabels,
   setPreviewEmailId,
   setSelectedEmails,
+  setSearchResults,
   setSoftRemovedLabels,
 } from "../store/slices/mailSlice";
 import {
@@ -146,6 +147,9 @@ export const useGlobalContext = () => {
     // Backward compatibility: emails defaults to inbox
     emails: mail.inbox,
     setEmails: handleFunctionalUpdate(setEmails, "mail", "inbox"),
+    // Search results for optimistic updates
+    searchResults: mail.searchResults,
+    setSearchResults: handleFunctionalUpdate(setSearchResults, "mail", "searchResults"),
     // Access to all folders/categories
     mailFolders: {
       inbox: mail.inbox,

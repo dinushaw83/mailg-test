@@ -88,7 +88,7 @@ const withUndo = (ids, setEmails, operation) => {
 export default function useMailActions() {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
-  const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
+  const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels, setSearchResults, searchResults } = useGlobalContext();
 
   // Centralized ID resolution hook
   const { resolveIds, resolveThreadIds } = useIdResolver();
@@ -872,10 +872,14 @@ export default function useMailActions() {
       // Optimistic updates using resolved IDs
       updateQueryCache(allIds, (email) => ({ ...email, is_starred: newState }));
       setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: newState } : m)));
+      // Also update search results for optimistic updates on search page
+      setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: newState } : m)));
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(allIds, (email) => ({ ...email, is_starred: !newState }));
+        setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: !newState } : m)));
+        setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: !newState } : m)));
       };
 
       // API call based on action and context
@@ -912,7 +916,7 @@ export default function useMailActions() {
         }
       }
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
+    [setEmails, setSearchResults, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const setStar = useCallback(
@@ -925,10 +929,14 @@ export default function useMailActions() {
       // Optimistic updates using resolved IDs
       updateQueryCache(allIds, (email) => ({ ...email, is_starred: value }));
       setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: value } : m)));
+      // Also update search results for optimistic updates on search page
+      setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: value } : m)));
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(allIds, (email) => ({ ...email, is_starred: !value }));
+        setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: !value } : m)));
+        setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: !value } : m)));
       };
 
       // API call based on action and context
@@ -969,7 +977,7 @@ export default function useMailActions() {
         }
       }
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
+    [setEmails, setSearchResults, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const markRead = useCallback(
