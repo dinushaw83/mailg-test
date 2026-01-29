@@ -41,6 +41,7 @@ from app.utils.label_utils import (
     get_system_label,
     get_threads_with_system_label,
     sync_thread_labels,
+    delete_thread_if_empty,
     FOLDER_TO_LABEL,
 )
 from app.utils.email_utils import (
@@ -84,7 +85,6 @@ def create_email(
         thread = Thread(
             subject=email_data.subject or "(No Subject)",
             owner_id=current_user.id,
-            participant_count=len(email_data.recipients) + 1,
             email_count=1,
             last_email_at=datetime.now(UTC),
         )
@@ -456,13 +456,16 @@ def update_email(
     if email.thread_id:
         thread = db.query(Thread).filter(Thread.id == email.thread_id).first()
         if thread:
-            # Sync thread subject with email subject
+            # Only update thread subject if thread contains only drafts
+            # Once any email is sent or received, the thread subject is locked
             if email.subject:
-                thread.subject = email.subject
-            
-            # Update participant count if recipients changed
-            if recipients_data is not None:
-                thread.participant_count = len(recipients_data) + 1
+                has_non_draft_email = db.query(Email).filter(
+                    Email.thread_id == email.thread_id,
+                    Email.status != EmailStatus.DRAFT.value
+                ).first() is not None
+                
+                if not has_non_draft_email:
+                    thread.subject = email.subject
     
     try:
         db.commit()
@@ -518,6 +521,9 @@ def delete_email(
                 detail=f"Email {email_id} not found"
             )
 
+    # Store thread_id before potential deletion (needed for label sync after commit)
+    thread_id = email.thread_id
+
     if permanent:
         # Permanently delete from database
         db.delete(email)
@@ -531,9 +537,15 @@ def delete_email(
         db.rollback()
         raise
 
-    # Sync thread labels to reflect the change
-    if email.thread_id and not permanent:
-        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
+    # Sync thread labels or delete empty thread
+    if thread_id:
+        if permanent:
+            # For permanent delete: delete thread if empty, otherwise sync labels
+            if not delete_thread_if_empty(db, thread_id, commit=True):
+                sync_thread_labels(db, thread_id, current_user.id, commit=True)
+        else:
+            # For soft delete: just sync labels
+            sync_thread_labels(db, thread_id, current_user.id, commit=True)
 
     logger.info(f"Email {email.id} {'permanently ' if permanent else 'moved to trash and '}deleted by user {current_user.id}")
 
@@ -987,7 +999,6 @@ def forward_email(
     thread = Thread(
         subject=subject,
         owner_id=current_user.id,
-        participant_count=len(forward_data.recipients) + 1,
         email_count=1,
         last_email_at=datetime.now(UTC),
     )

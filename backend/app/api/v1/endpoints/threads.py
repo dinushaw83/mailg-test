@@ -26,6 +26,7 @@ from app.core.constants import SystemLabel, FolderType, EmailStatus
 from app.utils.label_utils import (
     remove_system_label_from_thread,
     sync_thread_labels,
+    delete_thread_if_empty,
 )
 from app.utils.email_utils import (
     format_email_response,
@@ -146,8 +147,13 @@ def delete_thread(
         db.rollback()
         raise
     
-    # Sync thread labels to reflect trash state (only for non-permanent delete)
-    if not permanent:
+    # Sync thread labels or delete empty thread
+    if permanent:
+        # For permanent delete: delete thread if empty, otherwise sync labels
+        if not delete_thread_if_empty(db, thread_id, commit=True):
+            sync_thread_labels(db, thread_id, current_user.id, commit=True)
+    else:
+        # For soft delete: just sync labels
         sync_thread_labels(db, thread_id, current_user.id, commit=True)
     
     logger.info(f"Thread {thread_id} {'permanently deleted' if permanent else 'moved to trash'} by user {current_user.id}")

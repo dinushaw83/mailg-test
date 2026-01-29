@@ -906,3 +906,34 @@ def bulk_sync_thread_labels(
         db.commit()
     
     return len(thread_ids)
+
+
+def delete_thread_if_empty(db: Session, thread_id: UUID, commit: bool = False) -> bool:
+    """Delete a thread if it has no remaining emails.
+    
+    This is useful after permanently deleting an email - if the deleted email
+    was the only one in the thread, the empty thread should also be removed.
+    
+    Args:
+        db: Database session
+        thread_id: Thread ID to check and potentially delete
+        commit: Whether to commit the transaction
+        
+    Returns:
+        True if thread was deleted, False otherwise (thread still has emails)
+    """
+    from app.models.thread import Thread
+    from app.models.email import Email
+    
+    if thread_id is None:
+        return False
+    
+    email_count = db.query(Email).filter(Email.thread_id == thread_id).count()
+    if email_count == 0:
+        thread = db.query(Thread).filter(Thread.id == thread_id).first()
+        if thread:
+            db.delete(thread)
+            if commit:
+                db.commit()
+            return True
+    return False

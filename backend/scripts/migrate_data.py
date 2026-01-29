@@ -160,7 +160,6 @@ def migrate_threads(db: Session):
             id=thread_data["id"],
             owner_id=thread_data["owner_id"],
             subject=thread_data.get("subject", ""),
-            participant_count=thread_data.get("participant_count", 1),
             email_count=thread_data.get("email_count", 0),
             last_email_at=parse_datetime(thread_data.get("last_email_at")),
             created_at=parse_datetime(thread_data.get("created_at")),

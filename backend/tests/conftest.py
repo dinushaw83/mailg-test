@@ -78,7 +78,6 @@ def create_received_email_for_user(db_session, user, subject="Test Email", body=
         thread = Thread(
             subject=subject,
             owner_id=sender.id,
-            participant_count=2,
             email_count=1,
             last_email_at=datetime.now(UTC)
         )
@@ -137,7 +136,6 @@ def create_sent_email_for_user(db_session, user, subject="Test Email", body="Bod
         thread = Thread(
             subject=subject,
             owner_id=user.id,
-            participant_count=1,
             email_count=1,
             last_email_at=datetime.now(UTC)
         )

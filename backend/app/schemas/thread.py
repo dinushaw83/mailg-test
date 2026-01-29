@@ -16,7 +16,6 @@ class ThreadResponse(BaseModel):
     id: UUID
     subject: str
     owner_id: UUID
-    participant_count: int
     email_count: int
     is_important: bool = False  # User-specific, from thread metadata
     last_email_at: Optional[datetime] = None
@@ -32,7 +31,6 @@ class ThreadListResponse(BaseModel):
     
     id: UUID
     subject: str
-    participant_count: int
     email_count: int
     is_important: bool = False  # User-specific, from thread metadata
     last_email_at: Optional[datetime] = None

@@ -16,7 +16,6 @@ class Thread(Base):
     subject = Column(String, nullable=False)  # Original subject
     
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    participant_count = Column(Integer, default=1)
     email_count = Column(Integer, default=0)
 
     last_email_at = Column(DateTime(timezone=True))

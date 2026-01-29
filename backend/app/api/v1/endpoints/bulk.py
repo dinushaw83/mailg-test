@@ -36,6 +36,8 @@ from app.core.constants import FolderType, SystemLabel, VALID_FOLDER_TYPES
 from app.utils.label_utils import (
     bulk_remove_system_label_from_threads,
     bulk_sync_thread_labels,
+    sync_thread_labels,
+    delete_thread_if_empty,
 )
 from app.utils.bulk_utils import (
     get_user_accessible_threads,
@@ -344,9 +346,17 @@ def bulk_delete(request: BulkDeleteRequest, db: Session = Depends(get_db)):
 
         db.commit()
 
-        # 4. Sync labels for affected threads (only for non-permanent delete)
-        if thread_ids and not request.permanent:
-            bulk_sync_thread_labels(db, list(thread_ids), current_user.id, commit=True)
+        # 4. Sync labels for affected threads
+        if thread_ids:
+            if request.permanent:
+                # For permanent delete: delete empty threads, sync labels for non-empty ones
+                for tid in thread_ids:
+                    if not delete_thread_if_empty(db, tid):
+                        sync_thread_labels(db, tid, current_user.id)
+                db.commit()
+            else:
+                # For soft delete: just sync labels
+                bulk_sync_thread_labels(db, list(thread_ids), current_user.id, commit=True)
     except Exception as e:
         db.rollback()
         logger.error(f"Bulk delete failed: {e}")

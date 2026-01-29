@@ -136,7 +136,6 @@ class TestThreadEmailCount:
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
-            participant_count=1,
             email_count=3,
             last_email_at=datetime.now(UTC)
         )
@@ -197,7 +196,6 @@ class TestThreadEmailCount:
         thread = Thread(
             subject="Big Thread",
             owner_id=user.id,
-            participant_count=1,
             email_count=5,
             last_email_at=datetime.now(UTC)
         )
@@ -249,7 +247,6 @@ class TestThreadEmailCount:
         thread = Thread(
             subject="Shared Thread",
             owner_id=user.id,
-            participant_count=2,
             email_count=4,
             last_email_at=datetime.now(UTC)
         )
@@ -317,7 +314,6 @@ class TestThreadEmailCount:
         thread1 = Thread(
             subject="Thread 1",
             owner_id=user.id,
-            participant_count=1,
             email_count=2,
             last_email_at=datetime.now(UTC)
         )
@@ -325,7 +321,6 @@ class TestThreadEmailCount:
         thread2 = Thread(
             subject="Thread 2",
             owner_id=user.id,
-            participant_count=1,
             email_count=4,
             last_email_at=datetime.now(UTC)
         )
@@ -381,7 +376,6 @@ class TestGetEmailsByThread:
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
-            participant_count=2,
             email_count=3,
             last_email_at=datetime.now(UTC)
         )
@@ -415,7 +409,6 @@ class TestGetEmailsByThread:
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
-            participant_count=1,
             email_count=3,
             last_email_at=datetime.now(UTC)
         )
@@ -467,7 +460,6 @@ class TestGetEmailsByThread:
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
-            participant_count=1,
             email_count=2,
             last_email_at=datetime.now(UTC)
         )
@@ -503,7 +495,6 @@ class TestGetEmailsByThread:
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
-            participant_count=1,
             email_count=2,
             last_email_at=datetime.now(UTC)
         )
@@ -544,7 +535,6 @@ class TestGetEmailsByThread:
         thread = Thread(
             subject="Test Thread",
             owner_id=sample_user.id,
-            participant_count=1,
             email_count=1,
             last_email_at=datetime.now(UTC)
         )
@@ -573,7 +563,6 @@ class TestGetEmailsByThread:
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
-            participant_count=2,
             email_count=2,
             last_email_at=datetime.now(UTC)
         )
@@ -618,7 +607,6 @@ class TestGetEmailsByThread:
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
-            participant_count=1,
             email_count=3,
             last_email_at=datetime.now(UTC)
         )
