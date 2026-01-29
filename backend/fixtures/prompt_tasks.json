@@ -1,29 +1,4597 @@
 [
   {
-    "id": "MAIL:001",
-    "prompt": "You are logged in as John Doe (john.doe@example.com). Star the \"Q1 Project Planning Discussion\" thread.",
+    "id": "MAIL:6Flow:0",
+    "prompt": "Log in as 'john.doe@example.com' as admin. Open the Promotional emails and look for email that is sent by 'Diana Walters' with subject \"Question about export\". If it is marked starred, unstar it and mark this email to Projects->Client A->Phase 1 label. Then move to Social emails and delete the email from 'Nathaniel Smith'.",
+    "created_at": "<ISO_DATE_TIME>",
+    "updated_at": "<ISO_DATE_TIME>",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_deleted": [],
+          "expect_modified": [
+            {
+              "description": "Unstarred email",
+              "field_assertions": [
+                {
+                  "field": "is_starred",
+                  "expected": false,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Question about export",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.first_name",
+                  "expected": "Diana",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.last_name",
+                  "expected": "Walters",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Mail moved to Trash",
+              "field_assertions": [
+                {
+                  "field": "folder",
+                  "expected": "trash",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.first_name",
+                  "expected": "Nathaniel",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.last_name",
+                  "expected": "Smith",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": false,
+          "fail_on_extra_rows": false,
+          "detect_content_duplicates": false
+        },
+        "thread_labels": {
+          "expect_added": [
+            {
+              "description": "Phase 1 label applied to the email",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Phase 1",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Question about export",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "expect_no_deletes": false,
+          "fail_on_extra_rows": false,
+          "detect_content_duplicates": false
+        }
+      }
+    }
+  },
+  {
+    "id": "MAIL:new_4Flow:0",
+    "prompt": "Log in as 'john.doe@example.com' as admin. Open draft and search for an email with subject 'New feature proposal'. Send it to 'emily.davis@example.com' and add 'michael.chen@example.com' to CC and 'jane.smith@example.com' to BCC. Go to Sent section and verify that this email is sent. Make a new label 'New Feature' and make it nest label under the Work label. Mark this email under this new created label 'New Feature'",
+    "created_at": "<ISO_DATE_TIME>",
+    "updated_at": "<ISO_DATE_TIME>",
     "db_verification_config": {
       "tables": {
         "emails": {
           "expect_modified": [
             {
-              "description": "Star emails in the Q1 Project Planning Discussion thread",
+              "description": "Sent folder updated with email",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "New feature proposal",
+                  "operator": "STRING_CONTAINS"
+                }
+              ]
+            }
+          ]
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "New Feature label creation",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "New Feature",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Work",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "expect_no_deletes": false,
+          "fail_on_extra_rows": false,
+          "detect_content_duplicates": false
+        },
+        "thread_labels": {
+          "expect_added": [
+            {
+              "description": "New Feature label applied to email",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "New Feature",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "New feature proposal",
+                  "operator": "STRING_CONTAINS"
+                }
+              ]
+            }
+          ]
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Email sent from John Doe to Emily Davis",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "New feature proposal",
+                  "operator": "STRING_CONTAINS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "emily.davis@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email sent from John Doe to Michael Chen",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "New feature proposal",
+                  "operator": "STRING_CONTAINS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email sent from John Doe to Jane Smith",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "New feature proposal",
+                  "operator": "STRING_CONTAINS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "expect_no_deletes": false,
+          "fail_on_extra_rows": false,
+          "detect_content_duplicates": false
+        }
+      },
+      "ignore_tables": ["threads"]
+    }
+  },
+  {
+    "id": "MAIL:New_79Flow:0",
+    "prompt": "\"Log in as Elizabeth Jenkins (kwalls@example.net). In the inbox folder:\n- Mark the email by Robert Olsen with the subject Re: Partner Onboarding Process\"\" as unread\n- Star emails by David Brown (subject: \"\"Website Redesign Feedback\"\") and Nicole Robinson (subject: \"\"How to access account?\"\")\n\nIn the Drafts folder:\n- Unstar the email with the subject \"\"Re: billing not working\"\" and then delete it\n- Open the email with the subject \"\"Re: Question about billing\"\", add Sarah William as a recipient, and send the email.\"",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "sent email received on other end",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "kwalls@example.net",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: Question about billing",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "ensure a desired email is unread",
               "field_assertions": [
                 {
                   "field": "subject",
-                  "operator": "STRING_CONTAINS",
-                  "expected": "Q1 Project Planning Discussion"
+                  "expected": "Re: Partner Onboarding Process",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_read",
+                  "expected": false,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.first_name",
+                  "expected": "Robert",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.last_name",
+                  "expected": "Olsen",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "ensure a desired email is starred",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "How to access account?",
+                  "operator": "STRING_EQUALS"
                 },
                 {
                   "field": "is_starred",
-                  "operator": "BOOLEAN_EQUALS",
-                  "expected": true
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.first_name",
+                  "expected": "Nicole",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.last_name",
+                  "expected": "Robinson",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "ensure a desired email is starred",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Website Redesign Feedback",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.first_name",
+                  "expected": "David",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.last_name",
+                  "expected": "Brown",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "ensure an email in drafts is unstarred and deleted",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Re: billing not working",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": false,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "folder",
+                  "expected": "trash",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "ensure an email is sent from draft",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Re: Question about billing",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "kwalls@example.net",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1,
+          "expect_exact_modified_count": 5
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "ensure that Sarah Williams is an email recipient received",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Re: Question about billing",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "ensure that Sarah Williams is an email recipient sent",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Re: Question about billing",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["thread_labels", "threads", "saved_searches"]
+    }
+  },
+  {
+    "id": "MAIL:NEW_22Flow:0",
+    "prompt": "You are logged in as John Doe (john.doe@example.com). Check the inbox and read the email with the subject ‘Urgent: account access problem’. Write the following reply: ‘Thank you for sharing the details. I have reviewed the information and will proceed accordingly.’ Send the email. Once the reply is sent, star the reply and unstar the email with the subject ‘Re: How to reset password?’.",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "check sent mail added in sent folder.",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Re: Urgent: account access problem",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Thank you for sharing the details. I have reviewed the information and will proceed accordingly.",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "check 'Urgent: account access problem' is read.",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Urgent: account access problem",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_read",
+                  "expected": true,
+                  "operator": "BOOL"
+                }
+              ]
+            },
+            {
+              "description": "check 'Re: How to reset password?' unstarred.",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Re: How to reset password?",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": false,
+                  "operator": "BOOL"
                 }
               ]
             }
           ]
         }
+      },
+      "ignore_tables": [
+        "email_templates",
+        "signatures",
+        "general_settings",
+        "thread_user_metadata",
+        "users",
+        "advanced_settings",
+        "attachments",
+        "saved_searches",
+        "default_text_styles",
+        "labels",
+        "email_recipients",
+        "threads",
+        "thread_labels"
+      ]
+    }
+  },
+  {
+    "id": "MAIL:new_55Flow:0",
+    "prompt": "Log in as Michael Chen (michael.chen@example.com).\nOpen an email from the inbox with the subject “How to access account?”.\n* Mark this email as Important and also star this email.\n* Compose a new email with the following details:\n* To: sarah.williams@example.com\n* Subject: \"\"Production Issue Escalation\"\"\n* Body: \"\"A production issue has been reported and marked as critical. Please investigate and provide an update as soon as possible.\"\" \nSend the email.\nWithin the supported undo window:\n* Undo the send action\n* Confirm the email is restored as a Draft",
+    "created_at": "2026-01-29T18:22:28.869Z",
+    "updated_at": "2026-01-29T18:22:29.657Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "A production issue has been reported and marked as critical. Please investigate and provide an update as soon as possible.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "drafts",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Production Issue Escalation",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "How to access account?",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1,
+          "expect_exact_modified_count": 1
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Production Issue Escalation",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "A production issue has been reported and marked as critical. Please investigate and provide an update as soon as possible.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "drafts",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1,
+          "expect_exact_modified_count": 0
+        },
+        "thread_user_metadata": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "is_important",
+                  "expected": true,
+                  "operator": "EXISTS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "How to access account?",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels", "saved_searches"]
+    }
+  },
+  {
+    "id": "MAIL:new_93Flow:0",
+    "prompt": "\"Log in as Sarah Williams (sarah.williams@example.com). Search for an email with these filters:\nkeyword: Help needed\nfrom: Becky Henry\ndate range: 30 - 31 December 2025\n\nThere should be only one result. Read the email and then delete it. Finally, write a new email with these details:\nTo: Becky Henry\nSubject: Deleted the 'Help Needed' Email\nBody: Your email has been deleted.\n\nInstead of sending the email, close the write email window.\"",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Ensure that a new email is drafted",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Your email has been deleted.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "drafts",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Deleted the 'Help Needed' Email",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "Ensure that the email is read and then deleted",
+              "field_assertions": [
+                {
+                  "field": "folder",
+                  "expected": "trash",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_read",
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Help needed: notifications",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "ensure that meadowsomar@example.net is added as a recipient",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "meadowsomar@example.net",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Deleted the 'Help Needed' Email",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "Your email has been deleted.",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "ignore_tables": ["thread_labels", "saved_searches", "threads"]
+    }
+  },
+  {
+    "id": "MAIL:54Flow:0",
+    "prompt": "Login as John Doe (john.doe@example.com) with admin access.\n\nGo to the Primary Inbox and refresh.\n\nFind all emails with the subject \"Help needed: API\".\n\nCreate a new label called \"API\" if it does not already exist.\n\nApply the \"API\" label to all those API-related emails.\n\nAfter labeling them, move those emails to the Archive folder.",
+    "created_at": "2026-01-29T17:58:55.347Z",
+    "updated_at": "2026-01-29T17:58:56.099Z",
+    "db_verification_config": {
+      "tables": {
+        "labels": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "owner.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1
+        },
+        "thread_labels": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": false,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2
+        },
+        "saved_searches": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "owner.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "query",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1,
+          "detect_content_duplicates": false
+        },
+        "thread_user_metadata": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "is_archived",
+                  "expected": "true",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "is_archived",
+                  "expected": "true",
+                  "operator": "STRING_CONTAINS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2
+        }
       }
+    }
+  },
+  {
+    "id": "MAIL:new_56Flow:0",
+    "prompt": "\"Log in as John Doe (john.doe@example.com).\nPerform the following actions:\n1. Rename the label “Urgent” to “Expedient”.\n2. Create a sub-label \"\"2024\"\" under \"\"Expedient\"\"\n3. Delete the label Personal\n4. Compose a new email with the following details:\n* To: \"\"michael.chen@example.com\"\"\n* Subject: \"\"Expedited Follow-Up - 2024\"\"\n* Body: \"\"I hope you’re doing well. I just wanted to follow up on our last conversation and check if there are any updates on your end.\"\"\n  5. Send the email.\"",
+    "created_at": "2026-01-29T17:53:34.143Z",
+    "updated_at": "2026-01-29T17:53:35.122Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Sent email",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Expedited Follow-Up – 2024",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "I hope you’re doing well. I just wanted to follow up on our last conversation and check if there are any updates on your end.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Expedited Follow-Up – 2024",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "I hope you’re doing well. I just wanted to follow up on our last conversation and check if there are any updates on your end.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "detect_content_duplicates": false,
+          "expect_exact_modified_count": 0
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "Added 2024 to Expedient",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "2024",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Expedient",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [
+            {
+              "description": "Delete Label Personal",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Personal",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "Changes label name from Urgent to Expedient",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Expedient",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "fail_on_extra_rows": false,
+          "expect_exact_added_count": 1,
+          "expect_exact_modified_count": 1
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Receipent attached to the sent email",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Expedited Follow-Up – 2024",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "I hope you’re doing well. I just wanted to follow up on our last conversation and check if there are any updates on your end.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Expedited Follow-Up – 2024",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "I hope you’re doing well. I just wanted to follow up on our last conversation and check if there are any updates on your end.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:new_49Flow:2,3",
+    "prompt": "Log in as john.doe@example.com.\n\nEnsure the following label hierarchy exists. Create any missing labels as needed:\n   `Project` -> `Alpha` -> `Phase1`\n\nSend an email with the following details;\nSubject: Q1 Project Roadmap Review\nMessage: Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..\n\nSet the recipients as follows:\n\nTo: Jane Smith <jane.smith@example.com>\nCC: David Brown <david.brown@example.com>\nBCC: Sarah Williams <sarah.williams@example.com>\nFinally, apply the Phase1 label to the composed email.",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Email sent from John Doe",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Jane Smith",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by David Brown",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Sarah Williams",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "expect_exact_added_count": 4
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "Phase1 label verification",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Phase1",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Alpha",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Alpha label verification",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Alpha",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Project",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Project label verification",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Project",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_exact_added_count": 3
+        },
+        "thread_labels": {
+          "expect_added": [
+            {
+              "description": "Verify if Phase1 label applied",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Phase1",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Email sent from John Doe to David Brown in cc",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "david.brown@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email sent from John Doe to Jane Smith in to",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email sent from John Doe to Sarah Williams in bcc",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by David Brown included in cc",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "david.brown@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Jane Smith included in to",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Sarah Williams included in bcc",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true
+        }
+      },
+      "ignore_tables": ["threads"]
+    }
+  },
+  {
+    "id": "MAIL:new_14Flow:0",
+    "prompt": "Log in as **Sarah Williams** (sarah.williams@example.com).\n\nEnsure the following label hierarchy exists. Create any missing labels as needed:\n* Work\n    * Reports\n        * Presidential\nSend an email with the following details;\n* **Subject:** Official Request for Administrative and Security Access\n* **Body:** I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.\n\nSet the recipients as follows:\n\n* **To:** Jane Smith (jane.smith@example.com)\n* **CC:** Michael Chen (michael.chen@example.com)\n* **BCC:** Emily Davis (emily.davis@example.com)\n\n\nFinally, apply the Presidential label to the composed email.",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Email sent from Sarah Williams",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Jane Smith",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Michael Chen",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Emily Davis",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "expect_exact_added_count": 4
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "Presidential label verification",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Presidential",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Reports",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Reports label verification",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Reports",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Work",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Work label verification",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Work",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_exact_added_count": 3
+        },
+        "thread_labels": {
+          "expect_added": [
+            {
+              "description": "Verify if Phase1 label applied",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Presidential",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Email sent from Sarah Williams to Michael Chen in cc",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email sent from Sarah Williams to Jane Smith in to",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email sent from Sarah Williams to Emily Davis in bcc",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "emily.davis@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Michael Chen included in cc",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Jane Smith included in to",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Emily Davis included in bcc",
+              "field_assertions": [
+                {
+                  "field": "email.body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "emily.davis@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true
+        }
+      },
+      "ignore_tables": ["threads"]
+    }
+  },
+  {
+    "id": "MAIL:new_13Flow:0",
+    "prompt": "Log in as John Doe (john.doe@example.com)\nNavigate to \"Sent\" and look for email with subject \"Re: Question about billing\"\nClick on \"reply\" and change the \"to\" from \"john.doe@example.com\" to \"hthompson@example.com\".\nCopy the text from the parent email which is what you're to reply to and paste it into the body of the reply.\nClick \"Send\"\nImmediately undo the send action.\nNavigate to \"draft\" to confirm the email is not sent.\nOpen the email and locate the draft reply. Delete the draft reply.",
+    "db_verification_config": {
+      "tables": {
+        "threads": {
+          "expect_added": [],
+          "expect_modified": [
+            {
+              "description": "modify sent emails",
+              "field_assertions": [
+                {
+                  "field": "email_count",
+                  "expected": "15",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: Re: Question about billing",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 0,
+          "detect_content_duplicates": false,
+          "expect_exact_modified_count": 1
+        }
+      },
+      "ignore_tables": ["thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:new_84Flow:0",
+    "prompt": "Log in as Michael Chen (michael.chen@example.com). Compose a new email to john.doe@example.com with subject \"Meeting Agenda\" and body \"Please find the agenda items below.\" Save it as a draft. Navigate to Drafts folder and verify it exists. Open the draft and send it.",
+    "created_at": "2026-01-29T15:39:30.048Z",
+    "updated_at": "2026-01-29T15:39:31.307Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Please find the agenda items below.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Meeting Agenda",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Please find the agenda items below.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Meeting Agenda",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Meeting Agenda",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "Please find the agenda items below.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Meeting Agenda",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "Please find the agenda items below.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "detect_content_duplicates": false,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:New_78Flow:0",
+    "prompt": "Log in as John Doe (john.doe@example.com). Search for an email from Matthew Estrada with the subject \"Help needed: API\". Unstar the email and reply to it with the following message: \"Noted. Will do the job immediately.\" After that, star the reply email (Not the original one).",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Ensure that the reply to the main email is sent",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Noted. Will do the job immediately.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent_email.subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": true,
+                  "operator": "BOOL"
+                }
+              ]
+            },
+            {
+              "description": "Ensure that the reply to the main email is received",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Noted. Will do the job immediately.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "Ensure that the main email is unstarred",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_read",
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": false,
+                  "operator": "BOOL"
+                }
+              ]
+            }
+          ]
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Ensure that amandasalinas@example.org is in the recipient list received",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "amandasalinas@example.org",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Re: Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Ensure that amandasalinas@example.org is in the recipient list sent",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "amandasalinas@example.org",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Re: Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "ignore_tables": ["thread_labels", "threads", "saved_searches"]
+    }
+  },
+  {
+    "id": "MAIL:new_82Flow:2",
+    "prompt": "Login as John Doe(john.doe@example.com).\nNavigate to the Primary Inbox and star the email from Nathaniel Smith(hthompson@example.com) with subject \"\"Feature request: subscription\"\".\nNext, find the email with subject \"\"Issue with payment\"\" from Cynthia Murphy(scottsamantha@example.net) and star that email too.",
+    "created_at": "2026-01-29T16:24:15.902Z",
+    "updated_at": "2026-01-29T16:24:17.168Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_modified": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "sender.email",
+                  "expected": "hthompson@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Feature request: subscription",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": true,
+                  "operator": "BOOL"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "sender.email",
+                  "expected": "scottsamantha@example.net",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Issue with payment",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": true,
+                  "operator": "BOOL"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 0,
+          "expect_exact_modified_count": 2
+        }
+      },
+      "ignore_tables": ["saved_searches", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:46Flow:0",
+    "prompt": "Login as Emily Davis (emily.davis@example.com).\nIn the search bar, search for the email with the subject \"Urgent: email settings problem\".\nOpen the matching email from the search results to view the email details page.\nClick Reply.\nType this reply message:\n\"Thanks for the details — I'll review the access requirements and confirm the exact steps to get this resolved. If I need anything else from you, I'll follow up.\"\nSave the reply as a Draft (do not send yet).\nNavigate to Drafts and confirm the draft is present.\nOpen the draft and click Send.\nImmediately click Undo Send (within the allowed window) and confirm it reverts back (so it is no longer sent).\nThen click on Drafts and open that same email with the subject \"Question about email settings\" and delete this email and make sure that email is actually deleted. ",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "trash",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent_email.subject",
+                  "expected": "Urgent: email settings problem",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: Urgent: email settings problem",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Urgent: email settings problem",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1,
+          "expect_exact_modified_count": 1
+        },
+        "saved_searches": {
+          "expect_added": [
+            {
+              "description": "search the email",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Urgent: email settings problem",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "owner.email",
+                  "expected": "emily.davis@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "query",
+                  "expected": "Urgent: email settings problem",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "expect_exact_added_count": 1
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Re: Urgent: email settings problem",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.folder",
+                  "expected": "trash",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:1Flow:0",
+    "prompt": "Log in as John Doe (john.doe@example.com). Navigate to the primary inbox and mark the email from Dawn Young (kelly73@example.org) with subject \"notifications not working\" as important. Do not change anything else",
+    "created_at": "2026-01-29T06:57:36.669Z",
+    "updated_at": "2026-01-29T06:57:37.502Z",
+    "db_verification_config": {
+      "tables": {
+        "thread_user_metadata": {
+          "expect_added": [
+            {
+              "description": "Mark email as important",
+              "field_assertions": [
+                {
+                  "field": "is_important",
+                  "expected": "true",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "notifications not working",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1
+        }
+      },
+      "ignore_tables": ["thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:92Flow:0",
+    "prompt": "You are logging in as Jane Smith (jane.smith@example.com). Navigate to the Primary Inbox. Create a new label called 'Support-Urgent'. Find the email from Michael Chen with the subject 'Help needed: import' and apply the 'Support-Urgent' label to it. Star this email from Michael Chen. Next, find the email from Monica Richards with subject 'Help needed: API' and also apply the 'Support-Urgent' label to it. Finally, open the email from Michael Chen from the Starred Section and reply with the message: 'Hi Michael, I'm looking into this import issue now. Will update you shortly.' Send the reply.",
+    "created_at": "2026-01-29T03:15:00.000Z",
+    "updated_at": "2026-01-29T03:15:00.000Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Sent reply to Michael Chen",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Re: Help needed: import",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Hi Michael, I'm looking into this import issue now. Will update you shortly.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Received reply for Michael Chen",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Re: Help needed: import",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Hi Michael, I'm looking into this import issue now. Will update you shortly.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [
+            {
+              "description": "Michael Chen email starred and marked read",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "Help needed: import",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.first_name",
+                  "expected": "Michael",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.last_name",
+                  "expected": "Chen",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "is_read",
+                  "expected": true,
+                  "operator": "BOOL"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 1
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "Support-Urgent label created by Jane",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Support-Urgent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_system",
+                  "expected": false,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "owner.email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1,
+          "expect_exact_modified_count": 0
+        },
+        "thread_labels": {
+          "expect_added": [
+            {
+              "description": "Support-Urgent label applied to Michael Chen thread",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Support-Urgent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Re: Help needed: import",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Support-Urgent label applied to Monica Richards thread",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Support-Urgent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Help needed: API",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Starred label auto-applied to Michael Chen thread",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Starred",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Re: Help needed: import",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Sent label auto-applied to Michael Chen thread",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Re: Help needed: import",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Inbox label auto-applied for Michael Chen receiving reply",
+              "field_assertions": [
+                {
+                  "field": "label.name",
+                  "expected": "Inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "thread.subject",
+                  "expected": "Re: Help needed: import",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "user.email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 5,
+          "expect_exact_modified_count": 0
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Michael Chen as TO on sent reply",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Re: Help needed: import",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Michael Chen as TO on received reply",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.subject",
+                  "expected": "Re: Help needed: import",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": [
+        "threads",
+        "saved_searches",
+        "thread_user_metadata",
+        "users",
+        "advanced_settings",
+        "signatures",
+        "email_templates",
+        "general_settings",
+        "attachments",
+        "default_text_styles"
+      ]
+    }
+  },
+  {
+    "id": "MAIL:71Flow:0",
+    "prompt": "Log in as kwalls@example.net. Navigate to the Primary Inbox and identify the following three specific emails: \n\n1) Subject 'How to access account?'\n2) Subject 'Error when login' and \n3) Subject 'Unable to view reports'\n\nCreate a parent label named 'Quarterly Review' and a sub-label 'Quarterly Review/Action Items', then apply the 'Quarterly Review/Action Items' label to these three emails. \nReply to the 'How to access account?' email with the text: 'Acknowledged. I have marked this for the upcoming quarterly review.' \n\nThen, compose a new email with: \n\nsubject 'Review Batch Complete' \nto sarah.williams@example.com, \nCC michael.chen@example.com, and the \nbody: 'I have categorized the pending items for the review session. Please check the label Action Items.' \n\nSend the email. Navigate to the Sent folder and star the email you just sent.",
+    "created_at": "2026-01-28T23:15:41.706Z",
+    "updated_at": "2026-01-28T23:15:42.439Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "Acknowledged. I have marked this for the upcoming quarterly review.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: How to access account?",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "I have categorized the pending items for the review session. Please check the label Action Items.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Review Batch Complete",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "Primary Label",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Quarterly Review",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Sub label",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Action Items",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        },
+        "threads": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "participant_count",
+                  "expected": 3,
+                  "operator": "NUMERIC_MATCH"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Review Batch Complete",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Reply email",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "shanegrimes@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Composed email",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Sarah Williams",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Composed email",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.chen@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Michael Chen",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "expect_no_deletes": false,
+          "fail_on_extra_rows": false,
+          "detect_content_duplicates": false,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:27Flow:0",
+    "prompt": "Sign in as John Doe (john.doe@example.com) who has administrator privileges.\nCreate a new email with the subject line: “System Access Setup”.\nWrite the email body as: \"Hello, I recently joined the team and need access to the internal database along with the required security platforms. Please guide me through the necessary steps.\"\n\nAdd jane.smith@example.com the primary recipient.\nCC sarah.wilson@example.com and BCC michael.johnson@example.com.\nSend the email.\n\nGo to the Primary Inbox and refresh to load the most recent messages.\n\nOpen the Sent folder and confirm the email was delivered with the correct recipients, subject, and message content.\n\nReturn to the Primary Inbox.\nLocate the email from Dawn Young with subject \"notifications not working\" and star the email.\n\nLastly create the label \"Data Upload Problems\" if it is not already available.",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "sending an email",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Hello, I recently joined the team and need access to the internal database along with the required security platforms. Please guide me through the necessary steps.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "System Access Setup",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "receiving an email",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Hello, I recently joined the team and need access to the internal database along with the required security platforms. Please guide me through the necessary steps.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "System Access Setup",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "Star the email",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": "true",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "kelly73@example.org",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "notifications not working",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": false,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 1
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Data Upload Problems",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "owner.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 1
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "System Access Setup",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "System Access Setup",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "System Access Setup",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.johnson@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "System Access Setup",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.johnson@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "System Access Setup",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.wilson@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "System Access Setup",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.wilson@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 6
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:87Flow:0",
+    "prompt": "Login as Jane Smith with email \"jane.smith@example.com\"\n\nCreate labels in following hierarchical structure:\n* \"Teams\" and \"Security\" are top-level labels\n* \"Dev\" is under \"Teams\"\n* \"Backend\" and \"Frontend\" are under \"Dev\"\n* \"API integration\" and \"User Experience\" are under \"Frontend\"\n\n\nGo to Inbox Updates tab, open the starred email where sender is Michelle Watson, write a reply \"you need to clear the cache\" and leave it as a draft (do not send)",
+    "created_at": "2026-01-29T18:41:11.384Z",
+    "updated_at": "2026-01-29T18:44:38.455Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "new reply draft created for email starred email",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "you need to clear the cache",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "Starred email from Michelle Watson read when replying",
+              "field_assertions": [
+                {
+                  "field": "sender.first_name",
+                  "expected": "Michelle",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.last_name",
+                  "expected": "Watson",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "jason59@example.net",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_read",
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": true,
+                  "operator": "BOOL"
+                }
+              ]
+            }
+          ],
+          "expect_exact_added_count": 1,
+          "expect_exact_modified_count": 1
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "Security Label Created",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Security",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Teams Label Created",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Teams",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Dev Label Created under Teams",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Dev",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Teams",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Backend Label Created under Dev",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Backend",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Dev",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Frontend Label Created under Dev",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Frontend",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Dev",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "API integration Label Created under Frontend",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "API integration",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Frontend",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "User Experience Label Created under Frontend",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "User Experience",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Frontend",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_exact_added_count": 7
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Recipient in draft email added",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "jason59@example.net",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "you need to clear the cache",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.first_name",
+                  "expected": "Michelle",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.last_name",
+                  "expected": "Watson",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_deleted": [],
+          "expect_modified": [],
+          "fail_on_extra_rows": false,
+          "expect_exact_added_count": 1,
+          "detect_content_duplicates": false
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:57Flow:0",
+    "prompt": "Log in as Sarah Williams(sarah.williams@example.com).\nCompose a new email with the following details:\n* To: emily.davis@example.com \n* Subject: Feature Clarification Needed\n* Body:\nI would like clarification on the scope and timeline of the upcoming feature.\n\nSave the email as a Draft.\nNavigate away from the compose view and return to Drafts.\nOpen the saved draft, replace the body with: I would like clarification on the scope and timeline of the upcoming feature. Please also confirm whether this impacts the current release cycle.\nSend the email and confirm it no longer appears in Drafts.",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Email sent",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "I would like clarification on the scope and timeline of the upcoming feature. Please also confirm whether this impacts the current release cycle.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Feature Clarification Needed",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Sent email received on other end",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "I would like clarification on the scope and timeline of the upcoming feature. Please also confirm whether this impacts the current release cycle.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Feature Clarification Needed",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Recipient verification for sent",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Feature Clarification Needed",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "I would like clarification on the scope and timeline of the upcoming feature. Please also confirm whether this impacts the current release cycle.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "emily.davis@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Recipient verification for received",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Feature Clarification Needed",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "I would like clarification on the scope and timeline of the upcoming feature. Please also confirm whether this impacts the current release cycle.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "emily.davis@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["thread_labels", "threads"]
+    }
+  },
+  {
+    "id": "MAIL:14Flow:0",
+    "prompt": "Log in as **Sarah Williams** (sarah.williams@example.com).\n\nEnsure the following label hierarchy exists. Create any missing labels as needed:\n* Work\n    * Reports\n        * Presidential\nSend an email with the following details; \n* **Subject:** Official Request for Administrative and Security Access\n* **Body:** I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.\n\nSet the recipients as follows:\n\n* **To:** Jane Smith (jane.smith@example.com)\n* **CC:** Michael Chen (michael.chen@example.com)\n* **BCC:** Emily Davis (emily.davis@example.com)\n\n\nFinally, apply the Presidential label to the composed email.",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Send new email",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Receive an email",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": false
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "Add label: work",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "work",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "owner.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent",
+                  "expected": false,
+                  "operator": "EXISTS"
+                }
+              ]
+            },
+            {
+              "description": "Add label: Reports",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Reports",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "owner.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "work",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Add label: name",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Presidential",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "owner.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent.name",
+                  "expected": "Reports",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 3,
+          "expect_exact_modified_count": 0
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Email recipient: Amanda Taylor",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Michael Chen",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email recipient: Emily Davis (status: sent)",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Emily Davis",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email recipient: Robert Miller",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Jane Smith",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email recipient: Emily Davis (status: received)",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Official Request for Administrative and Security Access",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Emily Davis",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": false,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:58Flow:0",
+    "prompt": "\"Log in as Sarah Williams(sarah.williams@example.com).\nCompose and send a new email with:\n* To: emily.davis@example.com \n* Subject: System Alert Follow-Up\n* Body: Please review the system alert and provide status updates. \nImmediately after sending:\n* Undo the send operation\nConfirm the email is restored as a Draft.\nOpen the draft, make no changes, and send it again.\"",
+    "created_at": "<ISO_DATE_TIME>",
+    "updated_at": "<ISO_DATE_TIME>",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Email Sent by Sarah",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Please review the system alert and provide status updates.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "System Alert Follow-Up",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Emily",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Please review the system alert and provide status updates.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "System Alert Follow-Up",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Email sent to Emily",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "System Alert Follow-Up",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "Please review the system alert and provide status updates.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "emily.davis@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Email received by Emily",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "System Alert Follow-Up",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "Please review the system alert and provide status updates.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_email",
+                  "expected": "emily.davis@example.com",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:36Flow:0",
+    "prompt": "Login as John Doe (john.doe@example.com) who has admin access.\n\nNavigate to the Primary Inbox and click Refresh to load the latest emails.\n\nFind the email with the subject \"notifications not working\" from Dawn Young.\nOpen the email and reply with the body: \"We are working on it. We will review this and get back to you by tomorrow.\"\n\nSend the reply.\n\nAfter sending the reply, make sure the original email is marked as read and starred.",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Reply email sent",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "We are working on it. We will review this and get back to you by tomorrow.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "parent_email.subject",
+                  "expected": "notifications not working",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: notifications not working",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Reply email recieved",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "We are working on it. We will review this and get back to you by tomorrow.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "sender.email",
+                  "expected": "john.doe@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: notifications not working",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_modified": [
+            {
+              "description": "Parent email starred and read",
+              "field_assertions": [
+                {
+                  "field": "is_starred",
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "is_read",
+                  "expected": true,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "subject",
+                  "expected": "notifications not working",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 1
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Reply email received",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Re: notifications not working",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "We are working on it. We will review this and get back to you by tomorrow.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.first_name",
+                  "expected": "Dawn",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.last_name",
+                  "expected": "Young",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Reply email sent",
+              "field_assertions": [
+                {
+                  "field": "email.subject",
+                  "expected": "Re: notifications not working",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.body",
+                  "expected": "We are working on it. We will review this and get back to you by tomorrow.",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "email.status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.first_name",
+                  "expected": "Dawn",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient.last_name",
+                  "expected": "Young",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 2,
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["saved_searches", "threads", "thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:2Flow:0",
+    "prompt": "Log in as John Doe (john.doe@example.com). Navigate to the drafts folder and delete the email with the subject \"Re: How to reset password?\", refresh, and make sure that the email no longer exists in inbox. After that, navigate to the Trash folder, refresh, and make sure that the deleted email is there.",
+    "created_at": "2026-01-29T07:32:04.885Z",
+    "updated_at": "2026-01-29T07:32:06.781Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [],
+          "expect_deleted": [],
+          "expect_modified": [
+            {
+              "description": "changed the folder to trash ",
+              "field_assertions": [
+                {
+                  "field": "status",
+                  "expected": "draft",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "trash",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Re: How to reset password?",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true,
+          "fail_on_extra_rows": true,
+          "expect_exact_added_count": 0,
+          "detect_content_duplicates": false,
+          "expect_exact_modified_count": 1
+        }
+      },
+      "ignore_tables": ["thread_labels"]
+    }
+  },
+  {
+    "id": "MAIL:80Flow:0",
+    "prompt": "Log in as Elizabeth Jenkins (kwalls@example.net) and compose an email with these details:\n- To: Michael Johnson (michael.johnson@example.com)\n- Cc: Lisa Garcia (lisa.garcia@example.com), Robert Miller (robert.miller@example.com)\n- Subject: New API Integration\n- Body: \"Please continue with the new API integration. Refer to this document for more details.\" (note: the string \"this document\" should hold a hyperlink to a site \"example.org\")\nand then hit \"Send\"",
+    "created_at": "2026-01-28T05:47:09.776Z",
+    "updated_at": "2026-01-28T05:47:10.966Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "Ensure that the email is correctly composed and sent",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "expected": "New API Integration",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "html_body",
+                  "expected": "<p>Please continue with the new API integration. Refer to <a target='_blank' rel='noopener noreferrer nofollow' href='example.org'>this document</a> for more details.</p>",
+                  "operator": "STRING_CONTAINS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "body",
+                  "expected": "Please continue with the new API integration. Refer to this document for more details.",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_exact_added_count": 1
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "Ensure that Robert Miller as added as \"cc\" recipient",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "robert.miller@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Robert Miller",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Ensure that Lisa Garcia as added as \"cc\" recipient",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "lisa.garcia@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Lisa Garcia",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "Ensure that Michael Johnson as added as \"to\" recipient",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "michael.johnson@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Michael Johnson",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_exact_added_count": 3
+        }
+      },
+      "ignore_tables": ["general_settings", "threads", "thread_labels", "advanced_settings", "default_text_styles"]
+    }
+  },
+  {
+    "id": "MAIL:49Flow:2, 3",
+    "prompt": "Log in as john.doe@example.com.\n\nEnsure the following label hierarchy exists. Create any missing labels as needed:\n   `Project` -> `Alpha` -> `Phase1`\n\nSend an email with the following details;\nSubject: Q1 Project Roadmap Review\nMessage: Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..\n\nSet the recipients as follows:\n\nTo: Jane Smith <jane.smith@example.com>\nCC: David Brown <david.brown@example.com>\nBCC: Sarah Williams <sarah.williams@example.com>\nFinally, apply the Phase1 label to the composed email.",
+    "created_at": "2026-01-28T22:25:18.579Z",
+    "updated_at": "2026-01-28T22:25:19.594Z",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": false,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "status",
+                  "expected": "sent",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": false,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "body",
+                  "expected": "Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "folder",
+                  "expected": "inbox",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "is_starred",
+                  "expected": false,
+                  "operator": "BOOL"
+                },
+                {
+                  "field": "status",
+                  "expected": "received",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "subject",
+                  "expected": "Q1 Project Roadmap Review",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_no_deletes": true
+        },
+        "labels": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Phase1",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "name",
+                  "expected": "Alpha",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ]
+        },
+        "email_recipients": {
+          "expect_added": [
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "sarah.williams@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Sarah Williams",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "bcc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "jane.smith@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "Jane Smith",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "to",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            },
+            {
+              "description": "",
+              "field_assertions": [
+                {
+                  "field": "recipient_email",
+                  "expected": "david.brown@example.com",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_name",
+                  "expected": "David Brown",
+                  "operator": "STRING_EQUALS"
+                },
+                {
+                  "field": "recipient_type",
+                  "expected": "cc",
+                  "operator": "STRING_EQUALS"
+                }
+              ]
+            }
+          ],
+          "expect_exact_modified_count": 0
+        }
+      },
+      "ignore_tables": ["threads", "thread_labels"]
     }
   }
 ]
