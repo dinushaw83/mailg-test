@@ -30,7 +30,7 @@ class Email(Base):
     # Foreign keys
     sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id", ondelete="CASCADE"), index=True)
-    parent_email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id"))  # For replies/forwards
+    parent_email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id", ondelete="SET NULL"))  # For replies/forwards
     
     # Timestamps
     sent_at = Column(DateTime(timezone=True))

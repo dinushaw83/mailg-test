@@ -120,9 +120,7 @@ export default function TaskVerifier() {
       setIsLoadingSingleTask(true);
       setSingleTaskError(null);
       try {
-        const response = await apiClient.get(
-          `/v1/prompt-tasks/${encodeURIComponent(taskId)}`
-        );
+        const response = await apiClient.get(`/v1/prompt-tasks/${encodeURIComponent(taskId)}`);
         const data = response.data;
         setSingleTaskJson(data);
       } catch (e) {
@@ -183,10 +181,7 @@ export default function TaskVerifier() {
       let assertionResults = null;
 
       if (verifier.db_verification_config) {
-        assertionResults = compareResults(
-          verifier.db_verification_config,
-          diff
-        );
+        assertionResults = compareResults(verifier.db_verification_config, diff);
       }
 
       setVerifierResults((prev) => ({
@@ -194,9 +189,7 @@ export default function TaskVerifier() {
         [verifierId]: {
           id: verifierId,
           status: assertionResults?.passed ? "success" : "error",
-          message: assertionResults?.passed
-            ? "Verifier passed"
-            : "Verifier failed",
+          message: assertionResults?.passed ? "Verifier passed" : "Verifier failed",
           executionTime: Date.now() - startTime,
           timestamp: new Date().toUTCString(),
           assertionResults,
@@ -264,8 +257,7 @@ export default function TaskVerifier() {
   const filteredVerifiers = verifiers
     .filter(
       (verifier) =>
-        verifier.id.toString().includes(searchTerm) ||
-        verifier.prompt.toLowerCase().includes(searchTerm.toLowerCase())
+        verifier.id.toString().includes(searchTerm) || verifier.prompt.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       // Sort by ID string (handles IDs like "MAILG-001", "MAILG-002")
@@ -292,12 +284,8 @@ export default function TaskVerifier() {
   }, [run_id]);
 
   // Calculate stats
-  const passedCount = Object.values(verifierResults).filter(
-    (r) => r.status === "success"
-  ).length;
-  const failedCount = Object.values(verifierResults).filter(
-    (r) => r.status === "error"
-  ).length;
+  const passedCount = Object.values(verifierResults).filter((r) => r.status === "success").length;
+  const failedCount = Object.values(verifierResults).filter((r) => r.status === "error").length;
   const pendingCount = verifiers.length - passedCount - failedCount;
 
   // Raw JSON view - return null while waiting for useEffect to replace document
@@ -306,7 +294,7 @@ export default function TaskVerifier() {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "grey.50" }}>
+    <Box sx={{ height: "100vh", bgcolor: "grey.50", overflow: "auto" }}>
       <Box sx={{ maxWidth: "1280px", mx: "auto", px: 3, py: 4 }}>
         {/* Session Configuration */}
         <Card sx={{ mb: 3, borderColor: "grey.200" }}>
@@ -884,9 +872,7 @@ export default function TaskVerifier() {
                             {isExpanded && result ? "Re-run" : "Run"}
                           </Button>
                           <Button
-                            onClick={() =>
-                              window.open(`/task_verifier?id=${verifier.id}`, "_blank")
-                            }
+                            onClick={() => window.open(`/task_verifier?id=${verifier.id}`, "_blank")}
                             variant="outlined"
                             size="small"
                             startIcon={<ExternalLink />}
@@ -894,11 +880,7 @@ export default function TaskVerifier() {
                             View Verify JSON
                           </Button>
                           {!isExpanded && result && (
-                            <Button
-                              onClick={() => setExpandedVerifierId(verifier.id)}
-                              variant="text"
-                              size="small"
-                            >
+                            <Button onClick={() => setExpandedVerifierId(verifier.id)} variant="text" size="small">
                               <ChevronDown />
                             </Button>
                           )}

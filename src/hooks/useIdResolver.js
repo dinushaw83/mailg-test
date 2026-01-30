@@ -57,7 +57,10 @@ export const makeMatch = (selection) => {
  * @returns {Object} Object containing resolver functions
  */
 export function useIdResolver() {
-  const emails = useSelector((state) => state.mail.inbox || []);
+  const inboxEmails = useSelector((state) => state.mail.inbox || []);
+  const searchResults = useSelector((state) => state.mail.searchResults || []);
+  // Combine inbox and search results for ID resolution
+  const emails = [...inboxEmails, ...searchResults];
 
   /**
    * Resolves input IDs to get both email IDs and thread IDs.

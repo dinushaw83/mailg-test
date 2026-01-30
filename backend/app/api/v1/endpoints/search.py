@@ -24,7 +24,8 @@ from app.models.thread_user_metadata import ThreadUserMetadata
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 from app.models.user import User
-from app.core.constants import VALID_FOLDER_TYPES, VALID_EMAIL_CATEGORIES
+from app.core.constants import VALID_FOLDER_TYPES, VALID_EMAIL_CATEGORIES, SystemLabel
+from app.utils.label_utils import get_threads_with_system_label
 from app.schemas.search import ( SearchSuggestionsResponse,
     SavedSearchCreate, SavedSearchResponse
 )
@@ -457,7 +458,34 @@ def search_emails(
         query = query.filter(Email.is_read == is_read)
     
     if is_starred is not None:
-        query = query.filter(Email.is_starred == is_starred)
+        if is_starred:
+            # Get threads where ANY email is starred (via ThreadLabel)
+            starred_thread_ids = get_threads_with_system_label(db, current_user.id, SystemLabel.STARRED)
+            if starred_thread_ids is not None:
+                query = query.filter(
+                    or_(
+                        Email.thread_id.in_(db.query(starred_thread_ids.c.thread_id)),
+                        # Fallback for emails without threads
+                        and_(Email.thread_id.is_(None), Email.is_starred == True)
+                    )
+                )
+            else:
+                # No starred label exists - fallback to direct column filter
+                query = query.filter(Email.is_starred == True)
+        else:
+            # is_starred=False: exclude threads with starred label
+            starred_thread_ids = get_threads_with_system_label(db, current_user.id, SystemLabel.STARRED)
+            if starred_thread_ids is not None:
+                query = query.filter(
+                    or_(
+                        Email.thread_id.is_(None),
+                        ~Email.thread_id.in_(db.query(starred_thread_ids.c.thread_id))
+                    ),
+                    # Also check the email itself
+                    Email.is_starred == False
+                )
+            else:
+                query = query.filter(Email.is_starred == False)
     
     if is_important is not None:
         if is_important:

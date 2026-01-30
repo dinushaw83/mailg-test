@@ -339,7 +339,8 @@ export const fetchSearchResults = createAsyncThunk(
       return {
         results: data.results,
         pagination: data.pagination,
-        query: data.query,
+        // Use the URL-based searchQuery if provided, otherwise fall back to API response
+        query: searchParams.searchQuery || data.query,
         execution_time_ms: data.execution_time_ms,
         originalParams: searchParams.originalParams || {},
       };
@@ -771,6 +772,10 @@ const mailSlice = createSlice({
       // Legacy support: set emails to inbox
       state.inbox = action.payload;
     },
+    setSearchResults: (state, action) => {
+      // Update search results (for optimistic updates)
+      state.searchResults = action.payload;
+    },
     setEmailsForCategory: (state, action) => {
       const { category, emails } = action.payload;
       if (state.hasOwnProperty(category)) {
@@ -890,7 +895,7 @@ const mailSlice = createSlice({
 
         // Transform backend labels to frontend format
         const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
-        
+
         // Only keep system labels (which use composite keys like "Inbox", "Sent", etc.)
         // Remove all backend labels (which use UUIDs) and replace with fresh data
         const systemLabelsOnly = {};
@@ -1063,12 +1068,10 @@ const mailSlice = createSlice({
       .addMatcher(
         (action) => {
           // Only update lastMutationTime for actual mutation operations, not fetches
+          // Note: Star and important actions are intentionally excluded to allow quiet
+          // optimistic updates on search results without triggering a jarring refetch
           const mutationActions = [
-            "mail/updateEmailStarred/fulfilled",
-            "mail/updateEmailImportant/fulfilled",
             "mail/bulkUpdateEmails/fulfilled",
-            "mail/bulkUpdateEmailStarred/fulfilled",
-            "mail/bulkUpdateEmailImportant/fulfilled",
             "mail/bulkUpdateEmailRead/fulfilled",
             "mail/bulkMoveToSpam/fulfilled",
             "mail/bulkMoveFromSpam/fulfilled",
@@ -1119,6 +1122,7 @@ const mailSlice = createSlice({
 
 export const {
   setEmails,
+  setSearchResults,
   setEmailsForCategory,
   setLabels,
   setLabelIdToKeyMap,

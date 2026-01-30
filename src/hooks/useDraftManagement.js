@@ -188,6 +188,15 @@ export const useDraftManagement = ({
         let action;
 
         if (isFirstSave) {
+          // Only create if no draft exists yet (prevents double POST from stale callbacks or saveToBackendNow + debounce)
+          const draftAlreadyExists =
+            backendDraftIdRef.current !== null ||
+            (currentDraftId && isUUID(currentDraftId.toString()));
+          if (draftAlreadyExists) {
+            isSavingRef.current = false;
+            return saveDraftToBackend(false);
+          }
+
           // IMPORTANT: Set isFirstSaveRef to false BEFORE the API call to prevent
           // race conditions where another save triggers while this one is in flight
           isFirstSaveRef.current = false;
@@ -204,7 +213,7 @@ export const useDraftManagement = ({
             action = await dispatch(createReplyDraftThunk({ emailId: parentEmail.id, draftData: payload })).unwrap();
                       setHasPutUpdateCompleted(true);
 
-          } else {
+          } else if (!currentDraftId ) {
             // Use regular draft endpoint for compose emails
             const payload = feToBeDraftPayload(to, cc, bcc, subject, content, null);
             action = await dispatch(createDraftThunk(payload)).unwrap();

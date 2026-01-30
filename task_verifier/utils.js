@@ -65,20 +65,38 @@ export const evaluateFieldAssertions = (actualRow, fieldAssertions) => {
   return { allPassed, results };
 };
 
-export const findMatchingRow = (
-  actualRows,
-  fieldAssertions,
-  matchedIndices = new Set()
-) => {
+export const findMatchingRow = (actualRows, fieldAssertions, matchedIndices = new Set()) => {
   for (let i = 0; i < actualRows.length; i++) {
     if (matchedIndices.has(i)) continue;
-    const { allPassed, results } = evaluateFieldAssertions(
-      actualRows[i],
-      fieldAssertions
-    );
+    const { allPassed, results } = evaluateFieldAssertions(actualRows[i], fieldAssertions);
     if (allPassed) return { index: i, row: actualRows[i], results };
   }
   return null;
+};
+
+/**
+ * Find the closest matching row when no exact match exists.
+ * Returns the row with the highest number of passing assertions.
+ */
+export const findClosestMatch = (actualRows, fieldAssertions, matchedIndices = new Set()) => {
+  if (!actualRows || actualRows.length === 0 || !fieldAssertions || fieldAssertions.length === 0) {
+    return null;
+  }
+
+  let bestMatch = null;
+
+  for (let i = 0; i < actualRows.length; i++) {
+    if (matchedIndices.has(i)) continue;
+
+    const { results } = evaluateFieldAssertions(actualRows[i], fieldAssertions);
+    const passedCount = results.filter((r) => r.passed).length;
+
+    if (!bestMatch || passedCount > bestMatch.passedCount) {
+      bestMatch = { index: i, row: actualRows[i], results, passedCount };
+    }
+  }
+
+  return bestMatch;
 };
 
 /**
@@ -88,9 +106,7 @@ export const findMatchingRow = (
 const hasOnlyTimestampChanges = (mod) => {
   const changes = mod.changes || {};
   const changedFields = Object.keys(changes);
-  const significantChanges = changedFields.filter(
-    (key) => !IGNORED_DYNAMIC_FIELDS.includes(key)
-  );
+  const significantChanges = changedFields.filter((key) => !IGNORED_DYNAMIC_FIELDS.includes(key));
   return significantChanges.length === 0;
 };
 
@@ -153,12 +169,20 @@ export const compareResults = (config, actual) => {
             actual: found.row,
           });
         } else {
+          // Find closest match for better error reporting
+          const closest = findClosestMatch(
+            actualTable.added,
+            expectation.field_assertions,
+            matchedActualRows[`${tableName}:added`]
+          );
           mismatches.push({
             table: tableName,
             type: "missing_added",
             description: expectation.description,
             reason: "Expected added row not found",
             assertions: expectation.field_assertions,
+            evaluatedAssertions: closest?.results || null,
+            closestMatch: closest?.row || null,
           });
         }
       }
@@ -186,12 +210,21 @@ export const compareResults = (config, actual) => {
             changes: fullMod?.changes,
           });
         } else {
+          // Find closest match for better error reporting
+          const actualRowsForClosest = actualTable.modified.map((m) => m.after || m);
+          const closest = findClosestMatch(
+            actualRowsForClosest,
+            expectation.field_assertions,
+            matchedActualRows[`${tableName}:modified`]
+          );
           mismatches.push({
             table: tableName,
             type: "missing_modified",
             description: expectation.description,
             reason: "Expected modified row not found",
             assertions: expectation.field_assertions,
+            evaluatedAssertions: closest?.results || null,
+            closestMatch: closest?.row || null,
           });
         }
       }
@@ -215,12 +248,20 @@ export const compareResults = (config, actual) => {
             actual: found.row,
           });
         } else {
+          // Find closest match for better error reporting
+          const closest = findClosestMatch(
+            actualTable.deleted,
+            expectation.field_assertions,
+            matchedActualRows[`${tableName}:deleted`]
+          );
           mismatches.push({
             table: tableName,
             type: "missing_deleted",
             description: expectation.description,
             reason: "Expected deleted row not found",
             assertions: expectation.field_assertions,
+            evaluatedAssertions: closest?.results || null,
+            closestMatch: closest?.row || null,
           });
         }
       }
@@ -272,13 +313,8 @@ export const compareResults = (config, actual) => {
     if (tableConfig.expect_exact_modified_count !== undefined) {
       const actualModified = actualTable.modified || [];
       // Only count modifications with significant (non-timestamp) changes
-      const significantModifications = actualModified.filter(
-        (mod) => !hasOnlyTimestampChanges(mod)
-      );
-      if (
-        significantModifications.length !==
-        tableConfig.expect_exact_modified_count
-      ) {
+      const significantModifications = actualModified.filter((mod) => !hasOnlyTimestampChanges(mod));
+      if (significantModifications.length !== tableConfig.expect_exact_modified_count) {
         countErrors.push({
           table: tableName,
           type: "modified_count_mismatch",
@@ -290,9 +326,7 @@ export const compareResults = (config, actual) => {
             summary: mod.after?.summary || mod.before?.summary,
             name: mod.after?.name || mod.before?.name,
             title: mod.after?.title || mod.before?.title,
-            changedFields: Object.keys(mod.changes || {}).filter(
-              (key) => !IGNORED_DYNAMIC_FIELDS.includes(key)
-            ),
+            changedFields: Object.keys(mod.changes || {}).filter((key) => !IGNORED_DYNAMIC_FIELDS.includes(key)),
             rowType: "modified",
           })),
         });
@@ -308,8 +342,7 @@ export const compareResults = (config, actual) => {
             table: tableName,
             type: "extra_added",
             row: actualAdded[i],
-            reason:
-              "Extra row added beyond expected (fail_on_extra_rows is true)",
+            reason: "Extra row added beyond expected (fail_on_extra_rows is true)",
           });
         }
       }
@@ -324,8 +357,7 @@ export const compareResults = (config, actual) => {
             table: tableName,
             type: "extra_modified",
             row: actualModified[i],
-            reason:
-              "Extra row modified beyond expected (fail_on_extra_rows is true)",
+            reason: "Extra row modified beyond expected (fail_on_extra_rows is true)",
           });
         }
       }
@@ -358,14 +390,10 @@ export const compareResults = (config, actual) => {
       if (shouldIgnoreTable(tableName)) continue;
 
       // Map actual table name back to expected table name for lookup
-      const expectedTableName =
-        Object.keys(TABLE_NAME_MAP).find(
-          (k) => TABLE_NAME_MAP[k] === tableName
-        ) || tableName;
+      const expectedTableName = Object.keys(TABLE_NAME_MAP).find((k) => TABLE_NAME_MAP[k] === tableName) || tableName;
 
       // Check if this table is in the config
-      const isInConfig =
-        tablesConfig[expectedTableName] || tablesConfig[tableName];
+      const isInConfig = tablesConfig[expectedTableName] || tablesConfig[tableName];
       if (isInConfig) continue; // Already handled above
 
       // Flag any changes in unexpected tables
@@ -410,8 +438,7 @@ export const compareResults = (config, actual) => {
   const hasUnexpected = unexpected.length > 0;
   const hasCountErrors = countErrors.length > 0;
 
-  const passed =
-    hasMatches && !hasMismatches && !hasUnexpected && !hasCountErrors;
+  const passed = hasMatches && !hasMismatches && !hasUnexpected && !hasCountErrors;
 
   return {
     passed,
