@@ -39,6 +39,9 @@ env:
   NODE_VERSION: '20'
   BACKEND_PORT: 8766
   FRONTEND_PORT: 3002
+  # Secrets referenced
+  VM_HOST: ${{ secrets.GCP_VM_HOST }}
+  VM_USER: ${{ secrets.GCP_VM_USER }}
 
 jobs:
   # ===========================================================================
@@ -315,12 +318,12 @@ jobs:
             exit 1
           fi
           
-          if [ -z "${{ secrets.GCP_VM_HOST }}" ]; then
+          if [ -z "${{ env.VM_HOST }}" ]; then
             echo "::error::GCP_VM_HOST secret is not configured"
             exit 1
           fi
           
-          if [ -z "${{ secrets.GCP_VM_USER }}" ]; then
+          if [ -z "${{ env.VM_USER }}" ]; then
             echo "::error::GCP_VM_USER secret is not configured"
             exit 1
           fi
@@ -335,7 +338,7 @@ jobs:
       - name: Configure SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Extract image tags from build outputs
         id: images
@@ -365,7 +368,7 @@ jobs:
           # Copy backend fixtures (always override)
           ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy/backend'
           scp -r backend/fixtures ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/backend/
-  
+
       - name: Deploy containers
         env:
           SYSTEM_URL: ${{ vars.SYSTEM_URL }}
@@ -383,7 +386,7 @@ jobs:
           echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
           echo "  Backend API URL: ${BACKEND_API_URL}"
           
-          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} bash -s << EOF
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << EOF
             set -e
             cd ~/mailg-deploy
             
