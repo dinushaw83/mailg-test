@@ -11,7 +11,7 @@ const apiClient = axios.create({
 });
 
 // Store the config promise to ensure we only fetch once
-let configPromise = null;
+export let configPromise = null;
 
 /**
  * Fetches the API configuration from the UI backend server
