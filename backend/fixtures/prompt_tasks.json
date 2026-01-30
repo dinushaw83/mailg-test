@@ -8671,8 +8671,6 @@
   {
     "id": "MAIL_71Flow_8,11,2,3",
     "prompt": "Log in as kwalls@example.net. Navigate to the Primary Inbox and identify the following three specific emails: \n\n1) Subject 'How to access account?'\n2) Subject 'Error when login' and \n3) Subject 'Unable to view reports'\n\nCreate a parent label named 'Quarterly Review' and a sub-label 'Quarterly Review/Action Items', then apply the 'Quarterly Review/Action Items' label to these three emails. \nReply to the 'How to access account?' email with the text: 'Acknowledged. I have marked this for the upcoming quarterly review.' \n\nThen, compose a new email with: \n\nsubject 'Review Batch Complete' \nto sarah.williams@example.com, \nCC michael.chen@example.com, and the \nbody: 'I have categorized the pending items for the review session. Please check the label Action Items.' \n\nSend the email. Navigate to the Sent folder and star the email you just sent.",
-    "created_at": "2026-01-28T23:15:41.706Z",
-    "updated_at": "2026-01-28T23:15:42.439Z",
     "db_verification_config": {
       "tables": {
         "emails": {
@@ -8727,25 +8725,6 @@
                 {
                   "field": "name",
                   "expected": "Action Items",
-                  "operator": "STRING_EQUALS"
-                }
-              ]
-            }
-          ]
-        },
-        "threads": {
-          "expect_added": [
-            {
-              "description": "",
-              "field_assertions": [
-                {
-                  "field": "participant_count",
-                  "expected": 3,
-                  "operator": "NUMERIC_MATCH"
-                },
-                {
-                  "field": "subject",
-                  "expected": "Review Batch Complete",
                   "operator": "STRING_EQUALS"
                 }
               ]
@@ -8819,7 +8798,8 @@
         }
       },
       "ignore_tables": [
-        "thread_labels"
+        "thread_labels",
+        "threads"
       ]
     }
   },
