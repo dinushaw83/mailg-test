@@ -87,7 +87,7 @@ docker system prune -a --volumes || true
 
 # Start services
 echo -e "${GREEN}Starting services...${NC}"
-docker compose -f docker-compose.prod.yaml up -d
+docker compose -f docker-compose.prod.yaml --profile instrumentation up -d
 
 # Wait for services to be healthy
 echo -e "${GREEN}Waiting for services to be healthy...${NC}"

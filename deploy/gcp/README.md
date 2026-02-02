@@ -481,6 +481,12 @@ docker pull gcr.io/PROJECT_ID/mailg-frontend:latest
 ./deploy-from-registry.sh
 ```
 
+The deploy script starts the application stack **and** instrumentation (Prometheus, Grafana, OpenTelemetry Collector, cAdvisor, Node Exporter). For manual `docker compose up` on staging/production, use:
+
+```bash
+docker compose -f docker-compose.prod.yaml --profile instrumentation up -d
+```
+
 ### Cleaning Up
 
 ```bash
