@@ -326,7 +326,7 @@ const MoreActions = ({
                 />
               </>
             )}
-            <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
+            <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => navigate("/502")} />
             <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
             <Divider sx={{ marginY: "6px" }} />
             <ActionMenuItem

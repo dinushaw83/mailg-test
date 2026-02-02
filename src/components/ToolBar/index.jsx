@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation, useParams } from "react-router-dom";
 
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
 import Box from "@mui/material/Box";
@@ -12,16 +13,15 @@ import MoreActions from "../MailActions/MoreActions";
 import Pagination from "./Pagination";
 import Popover from "@mui/material/Popover";
 import SpamActions from "../MailActions/SpamActions";
+import { buildSearchBarFromUrl } from "../../utils/helperFunctions";
+import { buildSearchParams } from "../../utils/searchParams";
 import { createPortal } from "react-dom";
+import { fetchSearchResults } from "../../store/slices/mailSlice";
+import { queryClient } from "../../lib/query-client";
 import styled from "@emotion/styled";
+import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useParams, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { queryClient } from "../../lib/query-client";
-import { fetchSearchResults } from "../../store/slices/mailSlice";
-import { buildSearchParams } from "../../utils/searchParams";
-import { buildSearchBarFromUrl } from "../../utils/helperFunctions";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -280,77 +280,78 @@ const ToggleSplitPaneButton = () => {
   };
 
   return (
-    <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false, open: false }))}>
-      <Box>
-        <CheckboxContainer focused={focused}>
-          <IconButton
-            onClick={toggleSplitPane}
-            sx={{
-              paddingTop: "8px",
-              paddingBottom: "8px",
-              paddingLeft: "3px",
-              paddingRight: "3px",
-              borderRadius: "5px",
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 20,
-                color: "rgb(68, 68, 68)",
-              }}
-            >
-              {icon}
-            </span>
-          </IconButton>
-          <IconButton
-            sx={{
-              paddingTop: "8px",
-              paddingBottom: "8px",
-              paddingLeft: "1px",
-              paddingRight: "1px",
-              borderRadius: "5px",
-            }}
-            onClick={toggleOpen}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 20,
-                color: "rgb(68, 68, 68)",
-              }}
-            >
-              {open ? "arrow_drop_up" : "arrow_drop_down"}
-            </span>
-          </IconButton>
-        </CheckboxContainer>
-        <Popover
-          open={open}
-          anchorEl={anchorEl}
-          onClose={() => setState((prev) => ({ ...prev, open: false }))}
-          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        >
-          <ActionMenuItem
-            label="No Split"
-            onClick={() => {
-              handleSplitPane({ direction: "no-split", showPanel: false });
-            }}
-          />
-          <ActionMenuItem
-            label="Vertical Split"
-            onClick={() => {
-              handleSplitPane({ direction: "vertical", showPanel: true });
-            }}
-          />
-          <ActionMenuItem
-            label="Horizontal Split"
-            onClick={() => {
-              handleSplitPane({ direction: "horizontal", showPanel: true });
-            }}
-          />
-        </Popover>
-      </Box>
-    </ClickAwayListener>
+    <></>
+    // <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false, open: false }))}>
+    //   {/* <Box>
+    //     <CheckboxContainer focused={focused}>
+    //       <IconButton
+    //         onClick={toggleSplitPane}
+    //         sx={{
+    //           paddingTop: "8px",
+    //           paddingBottom: "8px",
+    //           paddingLeft: "3px",
+    //           paddingRight: "3px",
+    //           borderRadius: "5px",
+    //         }}
+    //       >
+    //         <span
+    //           className="material-symbols-outlined"
+    //           style={{
+    //             fontSize: 20,
+    //             color: "rgb(68, 68, 68)",
+    //           }}
+    //         >
+    //           {icon}
+    //         </span>
+    //       </IconButton>
+    //       <IconButton
+    //         sx={{
+    //           paddingTop: "8px",
+    //           paddingBottom: "8px",
+    //           paddingLeft: "1px",
+    //           paddingRight: "1px",
+    //           borderRadius: "5px",
+    //         }}
+    //         onClick={toggleOpen}
+    //       >
+    //         <span
+    //           className="material-symbols-outlined"
+    //           style={{
+    //             fontSize: 20,
+    //             color: "rgb(68, 68, 68)",
+    //           }}
+    //         >
+    //           {open ? "arrow_drop_up" : "arrow_drop_down"}
+    //         </span>
+    //       </IconButton>
+    //     </CheckboxContainer>
+    //     <Popover
+    //       open={open}
+    //       anchorEl={anchorEl}
+    //       onClose={() => setState((prev) => ({ ...prev, open: false }))}
+    //       anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+    //     >
+    //       <ActionMenuItem
+    //         label="No Split"
+    //         onClick={() => {
+    //           handleSplitPane({ direction: "no-split", showPanel: false });
+    //         }}
+    //       />
+    //       <ActionMenuItem
+    //         label="Vertical Split"
+    //         onClick={() => {
+    //           handleSplitPane({ direction: "vertical", showPanel: true });
+    //         }}
+    //       />
+    //       <ActionMenuItem
+    //         label="Horizontal Split"
+    //         onClick={() => {
+    //           handleSplitPane({ direction: "horizontal", showPanel: true });
+    //         }}
+    //       />
+    //     </Popover>
+    //   </Box> */}
+    // </ClickAwayListener>
   );
 };
 

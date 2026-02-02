@@ -42,10 +42,18 @@ const UsageAnnotation = styled.div`
 `;
 
 const StorageUsage = ({ width = "15%", centerText = false }) => {
+  const navigate = useNavigate();
   return (
     <StorageUsageContainer style={{ flex: 1 }}>
       <ProgressBarContainer>
-        <a style={{ textDecoration: "none" }} href="#">
+        <a
+          style={{ textDecoration: "none", cursor: "pointer" }}
+          href="/502"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/502");
+          }}
+        >
           <ProgressBar>
             <UsedStorage style={{ width }} />
           </ProgressBar>
@@ -68,7 +76,12 @@ const Dot = styled.div`
   border-radius: 50%;
 `;
 
-const TermsPrivacyProgramPolicies = ({ centerText = false, onPrivacyClick }) => {
+const TermsPrivacyProgramPolicies = ({ centerText = false }) => {
+  const navigate = useNavigate();
+  const goTo502 = (e) => {
+    e.preventDefault();
+    navigate("/502");
+  };
   return (
     <div
       className="aeU"
@@ -82,22 +95,15 @@ const TermsPrivacyProgramPolicies = ({ centerText = false, onPrivacyClick }) => 
       }}
     >
       <div className="ma" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-        <a href="#" className="l9">
+        <a href="/502" className="l9" onClick={goTo502}>
           Terms
         </a>
         <Dot />
-        <a
-          href="#"
-          className="l9"
-          onClick={(e) => {
-            e.preventDefault();
-            if (onPrivacyClick) onPrivacyClick();
-          }}
-        >
+        <a href="/502" className="l9" onClick={goTo502}>
           Privacy
         </a>
         <Dot />
-        <a href="#" className="l9">
+        <a href="/502" className="l9" onClick={goTo502}>
           Program Policies
         </a>
       </div>
@@ -106,12 +112,26 @@ const TermsPrivacyProgramPolicies = ({ centerText = false, onPrivacyClick }) => 
 };
 
 const LastAccountActivity = ({ centerText = false }) => {
+  const navigate = useNavigate();
   const style = centerText ? { width: "100%", display: "flex", alignItems: "center", justifyContent: "center" } : {};
   return (
     <div id=":2n" className="ae3" style={style}>
       <div className="l6">
         <div style={style}>Last account activity: 25 minutes ago</div>
-        <span id=":o8" className="l8 LJOhwe" tabIndex={0} role="link" style={style}>
+        <span
+          id=":o8"
+          className="l8 LJOhwe"
+          tabIndex={0}
+          role="button"
+          style={{ ...style, cursor: "pointer" }}
+          onClick={() => navigate("/502")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              navigate("/502");
+            }
+          }}
+        >
           Details
         </span>
       </div>
@@ -126,12 +146,10 @@ const FooterContainer = styled.div`
 `;
 
 const Footer = () => {
-  const navigate = useNavigate();
-
   return (
     <FooterContainer>
       <StorageUsage />
-      <TermsPrivacyProgramPolicies onPrivacyClick={() => navigate("/mailg-account/data-privacy")} />
+      <TermsPrivacyProgramPolicies />
       <LastAccountActivity />
       <div style={{ clear: "both" }} />
     </FooterContainer>
@@ -139,8 +157,6 @@ const Footer = () => {
 };
 
 export const PanelFooter = () => {
-  const navigate = useNavigate();
-
   return (
     <Box
       role="contentinfo"
@@ -156,7 +172,7 @@ export const PanelFooter = () => {
     >
       <StorageUsage centerText />
       <LastAccountActivity centerText />
-      <TermsPrivacyProgramPolicies centerText onPrivacyClick={() => navigate("/mailg-account/data-privacy")} />
+      <TermsPrivacyProgramPolicies centerText />
     </Box>
   );
 };

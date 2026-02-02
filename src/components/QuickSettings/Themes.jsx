@@ -3,8 +3,10 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Themes = () => {
+  const navigate = useNavigate();
   return (
     <Box>
       <Box sx={{ padding: "1rem", paddingBottom: "0" }}>
@@ -40,7 +42,7 @@ const Themes = () => {
               marginLeft: "-12px",
               paddingLeft: "12px",
             }}
-            onClick={() => {}}
+            onClick={() => navigate("/502")}
           >
             View all
           </Button>

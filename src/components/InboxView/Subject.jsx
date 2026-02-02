@@ -1,7 +1,8 @@
-import styled from "@emotion/styled";
 import React, { useCallback, useEffect, useState } from "react";
-import { Icon } from "./ActionBar";
+
 import EmailLabelChips from "../Labels/EmailLabelChips";
+import { Icon } from "./ActionBar";
+import styled from "@emotion/styled";
 import useMailActions from "../../hooks/useMailActions";
 
 const StyledSubject = styled.h2`
@@ -94,8 +95,8 @@ export const Subject = ({ subject, message }) => {
 
       {/* Right side: action icons */}
       <RightSection>
-        <Icon name="print" label="Print all" placement="top" />
-        <Icon name="open_in_new" label="In new window" placement="top" />
+        {/* <Icon name="print" label="Print all" placement="top" />
+        <Icon name="open_in_new" label="In new window" placement="top" /> */}
       </RightSection>
     </SubjectContainer>
   );
