@@ -34,7 +34,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { VerificationResult } from "./components";
-import apiClient, { configPromise } from "../src/services/apiClient.js";
+import apiClient from "../src/services/apiClient.js";
 import { compareResults } from "./utils";
 import { logout } from "../src/store/slices/userSlice.js";
 import { queryClient } from "../src/lib/query-client.js";
@@ -85,18 +85,7 @@ export default function TaskVerifier() {
   const fetchTasks = async () => {
     setIsLoadingTasks(true);
     try {
-      // Wait for API config to be fully loaded before making requests
-      // This prevents race conditions where baseURL isn't set yet
-      if (configPromise) {
-        await configPromise;
-      }
-      // Add cache-busting headers to prevent 304 responses from cached data
-      const response = await apiClient.get("/v1/prompt-tasks", {
-        headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-        },
-      });
+      const response = await apiClient.get("/v1/prompt-tasks");
       const data = response.data;
       setRawJsonData(data);
       const tasks = Array.isArray(data) ? data : data.prompt_tasks || [];
@@ -131,17 +120,7 @@ export default function TaskVerifier() {
       setIsLoadingSingleTask(true);
       setSingleTaskError(null);
       try {
-        // Wait for API config to be fully loaded
-        if (configPromise) {
-          await configPromise;
-        }
-        // Add cache-busting headers to prevent 304 responses
-        const response = await apiClient.get(`/v1/prompt-tasks/${encodeURIComponent(taskId)}`, {
-          headers: {
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-          },
-        });
+        const response = await apiClient.get(`/v1/prompt-tasks/${encodeURIComponent(taskId)}`);
         const data = response.data;
         setSingleTaskJson(data);
       } catch (e) {
@@ -173,17 +152,7 @@ export default function TaskVerifier() {
 
   const fetchDiff = async () => {
     try {
-      // Wait for API config to be fully loaded
-      if (configPromise) {
-        await configPromise;
-      }
-      // Add cache-busting headers to prevent 304 responses
-      const response = await apiClient.get(`/v1/db_diff?session_id=${run_id}`, {
-        headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-        },
-      });
+      const response = await apiClient.get(`/v1/db_diff?session_id=${run_id}`);
       return response.data;
     } catch (e) {
       console.error(e);
