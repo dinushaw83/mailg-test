@@ -172,7 +172,7 @@ services:
     profiles: ["instrumentation"]
     container_name: ui-gym-mailg-prometheus
     volumes:
-      - ./instrumentation/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./instrumentation/prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     ports:
       - "${PROMETHEUS_EXTERNAL_PORT:-9090}:9090"

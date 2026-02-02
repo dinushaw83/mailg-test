@@ -429,6 +429,13 @@ export FRONTEND_IMAGE_TAG=gcr.io/PROJECT_ID/mailg-frontend:latest
 - **`deploy.sh`**: Manual deployment with local builds
 - **`deploy-from-registry.sh`**: Automated deployment from registry (used by GitHub Actions)
 
+### Instrumentation (Prometheus, Grafana, OTEL)
+
+When using the instrumentation profile (e.g. `docker compose -f docker-compose.prod.yaml --profile instrumentation up -d`), the deploy directory must include the repo's `instrumentation/` folder so bind-mounted config files (Prometheus, Grafana, OTEL collector) exist.
+
+- **CI/CD**: The CD workflow copies `instrumentation/` to `~/mailg-deploy/` automatically.
+- **Manual deploy**: Copy the repo's `instrumentation/` folder into your deploy directory before starting with the instrumentation profile, e.g. `cp -r /path/to/repo/instrumentation ~/mailg-deploy/`.
+
 ## Monitoring and Maintenance
 
 ### Health Checks

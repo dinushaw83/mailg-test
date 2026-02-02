@@ -120,7 +120,7 @@ export default function TaskVerifier() {
       setIsLoadingSingleTask(true);
       setSingleTaskError(null);
       try {
-        const response = await apiClient.get(`/v1/prompt-tasks/${encodeURIComponent(taskId)}`);
+        const response = await apiClient.get(`/api/v1/prompt-tasks/${encodeURIComponent(taskId)}`);
         const data = response.data;
         setSingleTaskJson(data);
       } catch (e) {
