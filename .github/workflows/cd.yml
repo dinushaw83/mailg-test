@@ -12,6 +12,7 @@ on:
     branches:
       - staging
       - develop
+      - bugfix/instru-issue
   workflow_dispatch:
     inputs:
       environment:
