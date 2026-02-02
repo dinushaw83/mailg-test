@@ -1,4 +1,23 @@
 import { emailAPIMapper } from "./emails";
+import { removeHtmlTags } from "./helperFunctions";
+
+/**
+ * Returns plain text for the backend `body` field. If content.plainText looks like HTML,
+ * strips tags from content.html or content.plainText so the API always receives plain text.
+ * @param {Object} content - { html: string, plainText: string }
+ * @returns {string|null} Plain text for body, or null if empty
+ */
+function ensurePlainTextForBody(content) {
+  const plain = content?.plainText?.trim();
+  const html = content?.html?.trim();
+  const looksLikeHtml = typeof plain === "string" && plain.includes("<");
+  const source = looksLikeHtml || !plain ? (html || plain || "") : plain;
+  if (!source) return null;
+  if (!looksLikeHtml && plain) return plain;
+  const stripped = removeHtmlTags(source);
+  if (stripped !== undefined) return stripped;
+  return source.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() || null;
+}
 
 /**
  * Transform frontend draft data to backend POST payload format
@@ -32,7 +51,7 @@ export const feToBeDraftPayload = (to, cc, bcc, subject, content, scheduled_send
   return {
     subject: subject || "",
     recipients,
-    body: content.plainText || null,
+    body: ensurePlainTextForBody(content),
     html_body: content.html || "",
     is_draft: true,
     scheduled_send_at: scheduled_send_at || null,
@@ -47,7 +66,7 @@ export const feToBeDraftPayload = (to, cc, bcc, subject, content, scheduled_send
  */
 export const feToBeReplyDraftPayload = (content, replyAll = false) => {
   return {
-    body: content.plainText || null,
+    body: ensurePlainTextForBody(content),
     html_body: content.html || "",
     reply_all: replyAll,
   };
@@ -76,7 +95,7 @@ export const feToBeDraftUpdatePayload = ({
 }) => {
   return {
     subject: subject || "",
-    body: content.plainText || null,
+    body: ensurePlainTextForBody(content),
     html_body: content.html || "",
     // is_read,
     // is_starred,

@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import SearchBar from "./SearchBar";
-import { useGlobalContext } from "../contexts/GlobalContext";
-import { generateAvatarColor } from "../utils/helperFunctions";
+
 import ProfileMenu from "./ProfileMenu";
+import SearchBar from "./SearchBar";
+import { generateAvatarColor } from "../utils/helperFunctions";
+import { useGlobalContext } from "../contexts/GlobalContext";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const navigate = useNavigate();
   const { showQuickSettings, setShowQuickSettings, setIsLeftSidebarExpanded, loggedInUser } = useGlobalContext();
   const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
 
@@ -98,7 +101,8 @@ const Header = () => {
                   <div className="gb_j gb_qe" />
                   <SearchBar />
                   <div className="gb_v gb_qe bGJ">
-                    <div className="zo" data-tooltip="Support">
+                    <div className="zo" data-tooltip="Support" 
+                    >
                       <a
                         className="gb_re gb_h gb_Cd t6"
                         role="button"
@@ -108,6 +112,11 @@ const Header = () => {
                         aria-expanded="false"
                         aria-haspopup="true"
                         aria-controls="M842Cd"
+                        href="/502"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate("/502");
+                        }}
                       >
                         <svg
                           className="t7"
@@ -130,6 +139,7 @@ const Header = () => {
                       tabIndex={0}
                       aria-hidden="true"
                       style={{ display: "none" }}
+                      
                     />
                     <div className="FI" data-tooltip="Settings" jslog="85046; u014N:cOuCgd,Kr2w4b,xr6bB;">
                       <a
@@ -139,7 +149,11 @@ const Header = () => {
                         aria-label="Settings"
                         aria-expanded="false"
                         aria-haspopup="true"
-                        onClick={() => setShowQuickSettings(!showQuickSettings)}
+                        href="/502"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate("/502");
+                        }}
                       >
                         <svg
                           className="Xy"
@@ -163,10 +177,15 @@ const Header = () => {
                           <a
                             className="gb_B"
                             aria-label="MailG apps"
-                            href="#"
+                            // href="#"
                             aria-expanded="false"
                             role="button"
                             tabIndex={0}
+                            href="/502"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate("/502");
+                            }}
                           >
                             <svg className="gb_F" focusable="false" viewBox="0 0 24 24">
                               <path d="M6,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM16,6c0,1.1 0.9,2 2,2s2,-0.9 2,-2 -0.9,-2 -2,-2 -2,0.9 -2,2zM12,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2z" />

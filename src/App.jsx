@@ -10,6 +10,7 @@ import ContactsByLabel from "./pages/Contacts/ContactsByLabel";
 import ContactsSearch from "./pages/Contacts/ContactsSearch";
 import CreateContactPage from "./pages/Contacts/CreateContactPage";
 import EmailDetails from "./pages/EmailDetails";
+import FeatureUnavailablePage from "./pages/FeatureUnavailablePage";
 import Frequent from "./pages/Contacts/Frequent";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 import ImportDataMain from "./components/import_data/ImportDataMain";
@@ -18,7 +19,6 @@ import LocalStorageDownload from "./pages/LocalStorageDownload";
 import Login from "./pages/Login";
 import MailGAccount from "./pages/MailGAccount";
 import MailView from "./pages/MailView";
-import MergeAndFix from "./pages/Contacts/MergeAndFix";
 import OtherContacts from "./pages/Contacts/OtherContacts";
 import { PersistGate } from "redux-persist/integration/react";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -99,6 +99,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/502"
+                element={
+                  <ProtectedRoute>
+                    <FeatureUnavailablePage />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* All other routes wrapped in Layout and ProtectedRoute */}
               <Route
@@ -127,7 +135,7 @@ function App() {
                         <Route path="/contacts/person/:contactId" element={<ContactDetailsWithEdit />} />
                         <Route path="/contacts/trash" element={<ContactTrash />} />
                         <Route path="/contacts/search/:query" element={<ContactsSearch />} />
-                        <Route path="/contacts/suggestions" element={<MergeAndFix />} />
+                        <Route path="/contacts/suggestions" element={<Navigate to="/502" replace />} />
                         <Route path="/contacts/new" element={<CreateContactPage />} />
 
                         <Route path="*" element={<Navigate to="/inbox" replace />} />

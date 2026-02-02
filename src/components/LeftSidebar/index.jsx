@@ -215,11 +215,11 @@ const LeftSidebar = () => {
   };
 
   const manageLabels = () => {
-    return null;
+    navigate("/502");
   };
 
   const manageSubscriptions = () => {
-    return null;
+    navigate("/502");
   };
 
   useJumpToHotKeys();
@@ -233,14 +233,14 @@ const LeftSidebar = () => {
 
   const HIDDEN_FOLDERS = [
     { key: "important", label: "Important", icon: "label_important" },
-    { key: "chats", label: "Chats", icon: "chat" },
+    // { key: "chats", label: "Chats", icon: "chat" },
     { key: "scheduled", label: "Scheduled", icon: "schedule_send" },
     { key: "all", label: "All Mail", icon: "mail" },
     { key: "spam", label: "Spam", icon: "report", count: 0 },
     { key: "trash", label: "Trash", icon: "delete" },
-    { key: "categories", label: "Categories", icon: "label" },
-    { key: "manage-subscriptions", label: "Manage subscriptions", icon: "unsubscribe", onClick: manageSubscriptions },
-    { key: "manage-labels", label: "Manage labels", icon: "settings", onClick: manageLabels },
+    // { key: "categories", label: "Categories", icon: "label" },
+    // { key: "manage-subscriptions", label: "Manage subscriptions", icon: "unsubscribe", onClick: manageSubscriptions },
+    // { key: "manage-labels", label: "Manage labels", icon: "settings", onClick: manageLabels },
     { key: "create-new-label", label: "Create new label", icon: "add", onClick: handleCreateNewLabel },
   ];
 

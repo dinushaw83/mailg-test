@@ -1,10 +1,11 @@
-import { Tooltip } from "@mui/material";
-import React from "react";
 import { NavLink, useMatch } from "react-router-dom";
+
+import React from "react";
+import { Tooltip } from "@mui/material";
 
 const hsClass = (key) => `aHS-bn${key}`;
 
-export default function SidebarItem({ item, expanded }) {
+export default function   SidebarItem({ item, expanded }) {
   // make sure item.key doesn't start with "/"
   const key = item.key?.startsWith("/") ? item.key.slice(1) : item.key;
 

@@ -10,7 +10,7 @@ import MoveToMenu from "./MoveToMenu";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const buildMatchKeysForEmail = (email = {}) => {
   const keys = [];
@@ -30,6 +30,7 @@ const buildMatchKeysForEmail = (email = {}) => {
 };
 
 export default function SpamActions({ threads: _threads = [], folder, visible }) {
+  const navigate = useNavigate();
   const { moveToSpam, moveToTrash, notSpam, markRead, deleteForever, moveToLabel, moveToLabelFrom, moveToInbox } =
     useMailActions();
   const { selection, setSnackbar, emails, setEmails } = useGlobalContext();
@@ -506,7 +507,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
               autoHideDuration: 10000,
               action: (
                 <Box>
-                  <Button sx={{ textTransform: "none" }} size="small" onClick={() => {}}>
+                  <Button sx={{ textTransform: "none" }} size="small" onClick={() => navigate("/502")}>
                     Learn more
                   </Button>
                   <Button

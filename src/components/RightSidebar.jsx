@@ -1,10 +1,13 @@
-import React, { useEffect } from "react";
 import { IconButton, Tooltip } from "@mui/material";
-import { useGlobalContext } from "../contexts/GlobalContext";
+import React, { useEffect } from "react";
+
 import RightSideBarTabs from "./RightSidebarTabs/RightSideBarTabs";
 import styles from "./RightSidebar.module.css";
+import { useGlobalContext } from "../contexts/GlobalContext";
+import { useNavigate } from "react-router-dom";
 
 const RightSidebar = () => {
+  const navigate = useNavigate();
   const {
     rightSidebarExpanded,
     setRightSidebarExpanded,
@@ -133,9 +136,20 @@ const RightSidebar = () => {
                   <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-J6" style={{ userSelect: "none" }} />
                   <div
                     className="aT5-aOt-I-JX-Jw"
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Tasks"
                     style={{
                       backgroundImage: 'url("/assets/images/tasks_2021_2x.png")',
                       userSelect: "none",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => navigate("/502")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        navigate("/502");
+                      }
                     }}
                   />
                   <div className="bse-bvF-JX-axQ-avS Gs-avS" style={{ userSelect: "none" }} />
@@ -144,9 +158,9 @@ const RightSidebar = () => {
                 <div className={styles.rightSidebarTabIconWrapper}>
                   <div className={styles.tabIconBorder} data-active={rightSidebarActiveTab.activeTab === "contact"} />
                   <Tooltip title="Contacts" placement="bottom">
-                    <IconButton
+                    {/* <IconButton
                       size="medium"
-                      onClick={() => handleTabIconClick("contact")}
+                      onClick={() => navigate("/502")}
                       sx={{
                         color: "#1f58cc",
                         backgroundColor: rightSidebarActiveTab.activeTab === "contact" ? "#e8f0fe" : "transparent",
@@ -158,7 +172,7 @@ const RightSidebar = () => {
                       <span className="material-symbols-filled" style={{ fontSize: "21px" }}>
                         contact_page
                       </span>
-                    </IconButton>
+                    </IconButton> */}
                   </Tooltip>
                 </div>
                 <div

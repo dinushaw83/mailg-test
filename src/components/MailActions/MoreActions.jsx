@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { ActionMenuItem } from "./ActionMenuItem";
 import Box from "@mui/material/Box";
@@ -23,6 +24,7 @@ const useCustomHotKeys = ({ handlePeriodPress }) => {
 };
 
 const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
+  const navigate = useNavigate();
   const { markRead, setStar, setImportant, setMuted } = useMailActions();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [labelAnchorEl, setLabelAnchorEl] = React.useState(null);
@@ -584,8 +586,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
                     />
                   )}
 
-                  <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
-                  <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
+                  <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => navigate("/502")} />
+                  <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => navigate("/502")} />
                   <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
                 </>
               )}
@@ -619,9 +621,9 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
                   {anyStarred && (
                     <ActionMenuItem icon="star" label="Remove star" filled={true} onClick={() => handleStar(false)} />
                   )}
-                  <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
+                  <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => navigate("/502")} />
                   <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
-                  <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
+                  <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => navigate("/502")} />
                 </>
               )}
               <Divider sx={{ marginY: "6px" }} />

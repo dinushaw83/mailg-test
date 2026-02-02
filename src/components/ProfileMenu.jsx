@@ -15,8 +15,8 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
   const [profilePictureDialogOpen, setProfilePictureDialogOpen] = useState(false);
 
   const handleManageAccount = () => {
-    navigate("/mailg-account/personal-info");
     onClose();
+    navigate("/502");
   };
 
   const handleAddAccount = () => {
@@ -131,7 +131,7 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
               </Avatar>
               {/* Camera icon overlay */}
               <IconButton
-                onClick={handleProfilePictureClick}
+                // onClick={handleProfilePictureClick}
                 sx={{
                   position: "absolute",
                   bottom: 0,
@@ -176,7 +176,8 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
             {/* Manage Account Button */}
             <Button
               variant="outlined"
-              onClick={handleManageAccount}
+              onClick={()=> navigate("/502")}
+              // onClick={handleManageAccount}
               sx={{
                 textTransform: "none",
                 borderRadius: "24px",
@@ -199,7 +200,8 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
           {/* Add account and Sign out buttons */}
           <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
             <Button
-              onClick={handleAddAccount}
+              // onClick={handleAddAccount}
+              onClick={()=> navigate("/502")}
               sx={{
                 flex: 1,
                 textTransform: "none",
@@ -286,7 +288,11 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
           >
             <Typography
               component="a"
-              href="#"
+              // href="/502"
+              onClick={(e)=> {
+                e.preventDefault();
+                navigate("/502");
+              }}
               sx={{
                 fontSize: "12px",
                 color: "#5f6368",
@@ -301,7 +307,11 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
             <Typography sx={{ fontSize: "12px", color: "#5f6368" }}>•</Typography>
             <Typography
               component="a"
-              href="#"
+              // href="/502"
+              onClick={(e)=> {
+                e.preventDefault();
+                navigate("/502");
+              }}
               sx={{
                 fontSize: "12px",
                 color: "#5f6368",

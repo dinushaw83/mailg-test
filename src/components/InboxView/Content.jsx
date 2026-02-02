@@ -337,9 +337,9 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
             color={isStarred ? "#f4b400" : "rgb(68, 68, 68)"}
             filled={isStarred}
           />
-          <Icon name="mood" label="Add a reaction" />
+          {/* <Icon name="mood" label="Add a reaction" /> */}
           <Icon name="reply" label="Reply" onClick={handleReply} />
-          <Icon name="more_vert" label="More" onClick={handleMoreActions} />
+          {/* <Icon name="more_vert" label="More" onClick={handleMoreActions} /> */}
         </ActionsContainer>
       </TopBarContainer>
       {email && (
