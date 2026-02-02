@@ -795,6 +795,21 @@ def sync_thread_labels(
         if folder_label:
             labels_should_have.add(folder_label)
     
+    # Self-sent emails: Add INBOX if user sent to themselves
+    # (Sender has only SENT copy but should also see thread in inbox)
+    from app.models.email_recipient import EmailRecipient
+    from app.core.constants import EmailStatus
+    for email in user_emails:
+        if email.sender_id == user_id and email.status == EmailStatus.SENT.value:
+            # Check if user is also a recipient
+            is_self_recipient = db.query(EmailRecipient).filter(
+                EmailRecipient.email_id == email.id,
+                EmailRecipient.recipient_id == user_id
+            ).first() is not None
+            if is_self_recipient:
+                labels_should_have.add(SystemLabel.INBOX)
+                break  # Only need to find one self-sent email
+    
     # All emails belong to ALL_MAIL (if user has any emails in this thread)
     if user_emails:
         labels_should_have.add(SystemLabel.ALL_MAIL)
