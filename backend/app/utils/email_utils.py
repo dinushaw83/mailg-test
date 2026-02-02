@@ -22,6 +22,7 @@ from app.core.constants import (
 )
 from app.utils.label_utils import (
     sync_thread_labels,
+    add_system_label_to_thread,
 )
 
 logger = logging.getLogger(__name__)
@@ -391,9 +392,9 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
     emails_created = 0
     for recipient in email.recipients:
         if recipient.recipient_id:
-            # Skip creating received copy for the sender themselves
-            # The sender already has the SENT copy, no need for a duplicate RECEIVED copy
+            # For self-sent: add INBOX label so thread appears in inbox (no duplicate email needed)
             if recipient.recipient_id == actual_sender_id:
+                add_system_label_to_thread(db, email.thread_id, actual_sender_id, SystemLabel.INBOX)
                 continue
             
             recipient_user = db.query(User).filter(
