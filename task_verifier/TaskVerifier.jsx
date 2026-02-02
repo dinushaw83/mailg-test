@@ -815,13 +815,19 @@ export default function TaskVerifier() {
                             sx={{
                               color: "text.primary",
                               lineHeight: 1.6,
+                              whiteSpace: "pre-wrap",
                               display: expandedPrompts.has(verifier.id) ? "block" : "-webkit-box",
                               WebkitLineClamp: expandedPrompts.has(verifier.id) ? "none" : 2,
                               WebkitBoxOrient: "vertical",
                               overflow: "hidden",
                             }}
                           >
-                            {verifier.prompt}
+                            {(verifier.prompt ?? "")
+                              .replace(/\n/g, "\\n")
+                              .replace(/\r/g, "\\r")
+                              .replace(/\t/g, "\\t")
+                              .replace(/\f/g, "\\f")
+                              .replace(/\v/g, "\\v")}
                           </Typography>
                           <Button
                             onClick={(e) => {
