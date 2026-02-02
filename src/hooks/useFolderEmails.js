@@ -146,10 +146,11 @@ export default function useFolderEmails({
       };
     },
     enabled: !!accessToken,
-    // Inbox and Snoozed folders should always refetch since snooze times can expire
-    // (expired snoozes return to inbox, removed from snoozed)
-    staleTime: ["inbox", "snoozed"].includes(String(activeFolder).toLowerCase()) ? 0 : 30 * 1000,
-    refetchOnMount: ["inbox", "snoozed"].includes(String(activeFolder).toLowerCase()) ? "always" : true,
+    // These folders should always refetch since their contents can change frequently:
+    // - inbox/snoozed: snooze times can expire
+    // - starred/important: can be toggled from email detail page
+    staleTime: ["inbox", "snoozed", "starred", "important"].includes(String(activeFolder).toLowerCase()) ? 0 : 30 * 1000,
+    refetchOnMount: ["inbox", "snoozed", "starred", "important"].includes(String(activeFolder).toLowerCase()) ? "always" : true,
   });
 
   // Sync React Query data to Redux for backward compatibility
