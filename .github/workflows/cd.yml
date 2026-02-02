@@ -426,7 +426,7 @@ jobs:
           # Backend health check with retries
           echo "Checking backend health at ${SYSTEM_URL}/api/health..."
           for i in {1..30}; do
-            if curl -sf --max-time 5 "${SYSTEM_URL}/api/health" > /dev/null; then
+            if curl -sf --max-time 15 "${SYSTEM_URL}/api/health" > /dev/null; then
               echo "✅ Backend is healthy"
               break
             fi
@@ -435,13 +435,13 @@ jobs:
               exit 1
             fi
             echo "Attempt $i/30 - waiting..."
-            sleep 5
+            sleep 10
           done
           
           # Frontend health check with retries
           echo "Checking frontend health at ${SYSTEM_URL}/api/health..."
           for i in {1..30}; do
-            if curl -sf --max-time 5 "${SYSTEM_URL}" > /dev/null; then
+            if curl -sf --max-time 15 "${SYSTEM_URL}" > /dev/null; then
               echo "✅ Frontend is healthy"
               break
             fi
@@ -450,7 +450,7 @@ jobs:
               exit 1
             fi
             echo "Attempt $i/30 - waiting..."
-            sleep 5
+            sleep 10
           done
           
           echo "health_status=success" >> $GITHUB_OUTPUT
@@ -644,7 +644,7 @@ jobs:
           # Backend health check with retries
           echo "Checking production backend health at ${SYSTEM_URL}/api/health..."
           for i in {1..30}; do
-            if curl -sf --max-time 5 "${SYSTEM_URL}/api/health" > /dev/null; then
+            if curl -sf --max-time 15 "${SYSTEM_URL}/api/health" > /dev/null; then
               echo "✅ Production backend is healthy"
               break
             fi
@@ -653,13 +653,13 @@ jobs:
               exit 1
             fi
             echo "Attempt $i/30 - waiting..."
-            sleep 5
+            sleep 10
           done
           
           # Frontend health check with retries
           echo "Checking production frontend health at ${SYSTEM_URL}..."
           for i in {1..30}; do
-            if curl -sf --max-time 5 "${SYSTEM_URL}" > /dev/null; then
+            if curl -sf --max-time 15 "${SYSTEM_URL}" > /dev/null; then
               echo "✅ Production frontend is healthy"
               break
             fi
@@ -668,7 +668,7 @@ jobs:
               exit 1
             fi
             echo "Attempt $i/30 - waiting..."
-            sleep 5
+            sleep 10
           done
           
           echo "health_status=success" >> $GITHUB_OUTPUT

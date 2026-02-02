@@ -208,9 +208,9 @@ if [ "${CLEANUP_OLD_IMAGES:-false}" = "true" ]; then
     docker image prune -f --filter "until=168h" || true
 fi
 
-# Start services
+# Start services (including instrumentation for staging/production)
 log "Starting services..."
-docker compose -f docker-compose.prod.yaml up -d
+docker compose -f docker-compose.prod.yaml --profile instrumentation up -d
 
 # Wait for services to start
 log "Waiting for services to start..."
