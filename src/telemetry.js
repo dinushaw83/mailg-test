@@ -8,19 +8,21 @@ import { metrics, ValueType } from "@opentelemetry/api";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import { MeterProvider, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { resourceFromAttributes } from "@opentelemetry/resources";
-import apiClient from "./services/apiClient";
+import {configPromise} from "./services/apiClient";
 
 // Check if instrumentation is enabled via environment variable
 const ENABLE_INSTRUMENTATION = import.meta.env.VITE_ENABLE_INSTRUMENTATION === "true";
-const OTEL_COLLECTOR_URL = apiClient.defaults.baseURL + "/v1/otel-metrics";
 
 if (ENABLE_INSTRUMENTATION) {
-  setupInstrumentation();
+  configPromise.then( apiUrl => {
+    console.log("Instrumentation enabled: apiUrl=" + apiUrl);
+    setupInstrumentation(apiUrl);
+  });
 }
 
-function setupInstrumentation() {
+function setupInstrumentation(apiUrl) {
   const baseExporter = new OTLPMetricExporter({
-    url: OTEL_COLLECTOR_URL,
+    url:  apiUrl + "/v1/otel-metrics",
     headers: {
       "Content-Type": "application/json",
     },

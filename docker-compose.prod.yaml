@@ -53,9 +53,6 @@ services:
       start_period: 10s
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
     image: mailg-backend:latest
     container_name: ui-gym-mailg-backend
     depends_on:
@@ -64,7 +61,7 @@ services:
     environment:
       - DEVELOPMENT_MODE=${DEVELOPMENT_MODE:-false}
       - DB_BACKEND=postgres
-      - DATABASE_URL=postgresql+psycopg2://mailg:mailg@postgres:5432/postgres
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-mailg}:${POSTGRES_PASSWORD:-mail}g@postgres:5432/postgres
       - POSTGRES_ADMIN_DB=postgres
       - POSTGRES_TEMPLATE_DB=mailg_seed
       - POSTGRES_RUN_DB_PREFIX=mailg_
@@ -75,7 +72,7 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-mailg-local-dev-secret}
       - JWT_ACCESS_TOKEN_TTL_SECONDS=86400
       # OpenTelemetry configuration
-      - OTEL_SDK_DISABLED=${OTEL_SDK_DISABLED:-true}
+      - OTEL_SDK_DISABLED=${OTEL_SDK_DISABLED:-false}
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=mailg-backend
       # Prometheus URL for metrics API
@@ -93,25 +90,21 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8765/health >/dev/null || exit 1"]
       interval: 10s
-      timeout: 15s
+      timeout: 5s
       retries: 5
       start_period: 15s
 
   mailg:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        VITE_ENABLE_INSTRUMENTATION: "${VITE_ENABLE_INSTRUMENTATION:-false}"
+    image: turing-mailg-aws-mailg
     container_name: ui-gym-mailg-frontend
     ports:
-      - "3002:3000" 
+      - "3002:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
       - VITE_RUN_MODE=localstorage
       # OpenTelemetry configuration
-      - VITE_ENABLE_INSTRUMENTATION=${VITE_ENABLE_INSTRUMENTATION:-false}
+      - VITE_ENABLE_INSTRUMENTATION=${VITE_ENABLE_INSTRUMENTATION:-true}
       - BACKEND_API_URL=${BACKEND_API_URL:-http://localhost:8766/api}
     networks:
       - mailg-network
@@ -120,7 +113,7 @@ services:
       # Use curl (installed in the image) instead of wget
       test: ["CMD-SHELL", "curl -fsS http://localhost:3000/api/health >/dev/null || exit 1"]
       interval: 30s
-      timeout: 15s
+      timeout: 10s
       retries: 3
       start_period: 40s
 
@@ -130,7 +123,6 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
-    profiles: ["instrumentation"]
     container_name: ui-gym-mailg-cadvisor
     ports:
       - "8090:8080"
@@ -142,13 +134,13 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/containerd/containerd.sock:/var/run/containerd/containerd.sock:ro
       - /dev/disk/:/dev/disk:ro
     networks:
       - mailg-network
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
-    profiles: ["instrumentation"]
     container_name: ui-gym-mailg-node-exporter
     command:
       - "--path.rootfs=/host"
@@ -164,7 +156,6 @@ services:
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
-    profiles: ["instrumentation"]
     container_name: ui-gym-mailg-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
@@ -179,7 +170,6 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    profiles: ["instrumentation"]
     container_name: ui-gym-mailg-prometheus
     volumes:
       - ./instrumentation/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -202,7 +192,6 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    profiles: ["instrumentation"]
     container_name: ui-gym-mailg-grafana
     entrypoint: ["sh", "-c", "sh /etc/grafana/init.sh & exec /run.sh"]
     ports:
